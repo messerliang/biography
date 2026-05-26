@@ -1,0 +1,153 @@
+.page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #faf6f0 0%, #f5efe6 100%);
+  padding: 48rpx 40rpx 80rpx;
+  box-sizing: border-box;
+}
+
+.hero {
+  text-align: center;
+  padding: 60rpx 0 80rpx;
+}
+
+.hero-title {
+  font-size: 56rpx;
+  font-weight: 700;
+  color: #3d2b1f;
+  letter-spacing: 4rpx;
+}
+
+.hero-subtitle {
+  font-size: 28rpx;
+  color: #8b7355;
+  margin-top: 16rpx;
+  letter-spacing: 2rpx;
+}
+
+.hero-desc {
+  font-size: 26rpx;
+  color: #a89580;
+  margin-top: 32rpx;
+  line-height: 1.6;
+  padding: 0 20rpx;
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 28rpx;
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 36rpx 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(61, 43, 31, 0.08);
+}
+
+.card-icon {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  flex-shrink: 0;
+}
+
+.form-icon {
+  background: #f0ebe3;
+}
+
+.chat-icon {
+  background: #e8f0ea;
+}
+
+.video-icon {
+  background: #ebe8f5;
+}
+
+.video-zone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #3d2b1f 0%, #5c4033 100%);
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin-bottom: 28rpx;
+  box-shadow: 0 8rpx 32rpx rgba(61, 43, 31, 0.2);
+}
+
+.video-zone-left {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  flex: 1;
+}
+
+.video-zone-icon {
+  font-size: 48rpx;
+  flex-shrink: 0;
+}
+
+.video-zone-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #faf6f0;
+}
+
+.video-zone-desc {
+  font-size: 22rpx;
+  color: #c4a574;
+  margin-top: 6rpx;
+  line-height: 1.4;
+}
+
+.video-zone-action {
+  font-size: 28rpx;
+  color: #c4a574;
+  font-weight: 500;
+  flex-shrink: 0;
+  margin-left: 16rpx;
+}
+
+.card-body {
+  flex: 1;
+  margin: 0 24rpx;
+}
+
+.card-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #3d2b1f;
+}
+
+.card-desc {
+  font-size: 24rpx;
+  color: #8b7355;
+  margin-top: 10rpx;
+  line-height: 1.5;
+}
+
+.card-arrow {
+  font-size: 40rpx;
+  color: #c4a574;
+  font-weight: 300;
+}
+
+.history-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 60rpx;
+  font-size: 28rpx;
+  color: #8b7355;
+  gap: 8rpx;
+}
+
+.history-count {
+  color: #c4a574;
+}

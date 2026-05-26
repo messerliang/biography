@@ -1,0 +1,84 @@
+<view class="page">
+  <!-- 未选择视频 -->
+  <view class="import-zone" wx:if="{{!videoPath && !parsing}}" bindtap="pickVideo">
+    <view class="import-icon">🎬</view>
+    <view class="import-title">点击导入视频</view>
+    <view class="import-desc">从相册选择或现场拍摄，AI 将提取语音并生成传记</view>
+    <view class="import-tip">支持 mp4/mov，最长 10 分钟，不超过 100MB</view>
+  </view>
+
+  <!-- 已选视频 / 解析中 -->
+  <view class="video-panel" wx:if="{{videoPath}}">
+    <video
+      class="video-preview"
+      src="{{videoPath}}"
+      controls
+      object-fit="contain"
+      poster="{{videoThumb}}"
+    />
+
+    <view class="video-meta">
+      <text>时长 {{durationText}}</text>
+      <text class="dot">·</text>
+      <text>{{sizeText}}</text>
+    </view>
+
+    <!-- 解析进度 -->
+    <view class="status-box" wx:if="{{parsing}}">
+      <view class="status-title">{{statusText}}</view>
+      <progress percent="{{uploadProgress}}" stroke-width="6" activeColor="#c4a574" backgroundColor="#e8dfd3" />
+      <view class="status-tip">{{statusTip}}</view>
+    </view>
+
+    <!-- 解析结果 -->
+    <view class="transcript-box" wx:if="{{transcript && !parsing}}">
+      <view class="transcript-header">
+        <text class="transcript-label">识别文字（可编辑）</text>
+        <text class="reparse" bindtap="reparse">重新识别</text>
+      </view>
+      <textarea
+        class="transcript-input"
+        value="{{transcript}}"
+        bindinput="onTranscriptInput"
+        maxlength="-1"
+        auto-height
+      />
+    </view>
+
+    <!-- 风格选择 -->
+    <view class="style-section" wx:if="{{transcript && !parsing}}">
+      <view class="style-label">写作风格</view>
+      <view class="style-list">
+        <view
+          wx:for="{{styleList}}"
+          wx:key="key"
+          class="style-item {{selectedStyle === item.key ? 'active' : ''}}"
+          data-style="{{item.key}}"
+          bindtap="selectStyle"
+        >
+          <view class="style-name">{{item.label}}</view>
+          <view class="style-desc">{{item.desc}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="footer" wx:if="{{videoPath}}">
+    <button class="btn btn-secondary" bindtap="resetVideo" disabled="{{parsing}}">换一段视频</button>
+    <button
+      class="btn btn-primary"
+      wx:if="{{!transcript}}"
+      bindtap="startParse"
+      disabled="{{parsing}}"
+    >
+      {{parsing ? '解析中...' : '开始解析'}}
+    </button>
+    <button
+      class="btn btn-primary"
+      wx:if="{{transcript && !parsing}}"
+      bindtap="generateBio"
+    >
+      生成传记
+    </button>
+  </view>
+</view>

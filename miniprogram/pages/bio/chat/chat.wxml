@@ -1,0 +1,58 @@
+<view class="page">
+  <view class="chat-header">
+    <view class="chat-tip">AI 会像朋友一样，引导您回忆人生故事。讲述完毕后，点击底部按钮生成传记。</view>
+  </view>
+
+  <scroll-view
+    class="chat-list"
+    scroll-y
+    scroll-into-view="{{scrollTo}}"
+    scroll-with-animation
+    enhanced
+    show-scrollbar="{{false}}"
+  >
+    <view wx:for="{{messages}}" wx:key="index" id="msg-{{index}}" class="msg-row {{item.role === 'user' ? 'user' : 'assistant'}}">
+      <view class="avatar" wx:if="{{item.role === 'assistant'}}">记</view>
+      <view class="bubble">
+        <text user-select>{{item.content}}</text>
+      </view>
+      <view class="avatar user-avatar" wx:if="{{item.role === 'user'}}">我</view>
+    </view>
+
+    <view wx:if="{{isTyping}}" class="msg-row assistant">
+      <view class="avatar">记</view>
+      <view class="bubble typing">
+        <text>{{typingText}}</text>
+        <text class="cursor">|</text>
+      </view>
+    </view>
+
+    <view id="msg-bottom" style="height: 20rpx;"></view>
+  </scroll-view>
+
+  <view class="chat-footer">
+    <view class="style-picker">
+      <text class="style-label">风格：</text>
+      <picker mode="selector" range="{{styleLabels}}" value="{{styleIndex}}" bindchange="onStyleChange">
+        <view class="style-value">{{styleLabels[styleIndex]}} ▾</view>
+      </picker>
+    </view>
+
+    <view class="input-row">
+      <input
+        class="chat-input"
+        placeholder="讲述您的故事……"
+        value="{{inputValue}}"
+        bindinput="onInput"
+        confirm-type="send"
+        bindconfirm="sendMessage"
+        disabled="{{isTyping}}"
+      />
+      <button class="send-btn" bindtap="sendMessage" disabled="{{isTyping || !inputValue.trim()}}">发送</button>
+    </view>
+
+    <button class="generate-btn" bindtap="generateBiography" disabled="{{isTyping || messages.length < 2}}">
+      讲述完毕，生成传记
+    </button>
+  </view>
+</view>

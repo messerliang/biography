@@ -1,0 +1,21 @@
+<view class="page">
+  <view class="header">
+    <view class="title">{{title}}</view>
+    <view class="status" wx:if="{{generating}}">
+      <text class="dot">●</text> 正在撰写中……
+    </view>
+    <view class="status done" wx:elif="{{!generating && content}}">撰写完成</view>
+  </view>
+
+  <scroll-view class="content-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="content-box">
+      <text user-select>{{content}}</text>
+      <text class="cursor" wx:if="{{generating}}">|</text>
+    </view>
+  </scroll-view>
+
+  <view class="actions" wx:if="{{!generating}}">
+    <button class="action-btn secondary" bindtap="copyContent">复制全文</button>
+    <button class="action-btn primary" bindtap="saveContent">保存传记</button>
+  </view>
+</view>

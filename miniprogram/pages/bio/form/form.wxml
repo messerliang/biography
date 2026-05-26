@@ -1,0 +1,125 @@
+<view class="page">
+  <view class="progress-bar">
+    <view class="progress-fill" style="width: {{progressPercent}}%"></view>
+  </view>
+  <view class="step-indicator">第 {{currentStep + 1}} / {{totalSteps}} 步 · {{steps[currentStep].title}}</view>
+
+  <view class="step-header">
+    <view class="step-title">{{steps[currentStep].title}}</view>
+    <view class="step-subtitle">{{steps[currentStep].subtitle}}</view>
+  </view>
+
+  <!-- 基本信息 -->
+  <view class="form-section" wx:if="{{currentStep === 0}}">
+    <view class="field">
+      <view class="label">姓名</view>
+      <input class="input" placeholder="您的姓名或笔名" value="{{form.name}}" data-field="name" bindinput="onInput" />
+    </view>
+    <view class="field">
+      <view class="label">出生年月</view>
+      <input class="input" placeholder="如：1965年3月" value="{{form.birthYear}}" data-field="birthYear" bindinput="onInput" />
+    </view>
+    <view class="field">
+      <view class="label">籍贯 / 家乡</view>
+      <input class="input" placeholder="如：湖南长沙" value="{{form.hometown}}" data-field="hometown" bindinput="onInput" />
+    </view>
+  </view>
+
+  <!-- 童年与家庭 -->
+  <view class="form-section" wx:if="{{currentStep === 1}}">
+    <view class="field">
+      <view class="label">童年与家庭</view>
+      <textarea
+        class="textarea"
+        placeholder="父母、兄弟姐妹、成长环境、童年最难忘的事……"
+        value="{{form.childhood}}"
+        data-field="childhood"
+        bindinput="onInput"
+        maxlength="-1"
+        auto-height
+      />
+    </view>
+  </view>
+
+  <!-- 求学经历 -->
+  <view class="form-section" wx:if="{{currentStep === 2}}">
+    <view class="field">
+      <view class="label">求学经历</view>
+      <textarea
+        class="textarea"
+        placeholder="就读学校、专业、老师同学、校园里的故事……"
+        value="{{form.education}}"
+        data-field="education"
+        bindinput="onInput"
+        maxlength="-1"
+        auto-height
+      />
+    </view>
+  </view>
+
+  <!-- 工作与事业 -->
+  <view class="form-section" wx:if="{{currentStep === 3}}">
+    <view class="field">
+      <view class="label">工作与事业</view>
+      <textarea
+        class="textarea"
+        placeholder="职业经历、重要项目、成就与转折……"
+        value="{{form.career}}"
+        data-field="career"
+        bindinput="onInput"
+        maxlength="-1"
+        auto-height
+      />
+    </view>
+  </view>
+
+  <!-- 情感与感悟 -->
+  <view class="form-section" wx:if="{{currentStep === 4}}">
+    <view class="field">
+      <view class="label">情感与生活</view>
+      <textarea
+        class="textarea"
+        placeholder="婚姻、子女、爱好、生活中的温暖时刻……"
+        value="{{form.emotion}}"
+        data-field="emotion"
+        bindinput="onInput"
+        maxlength="-1"
+        auto-height
+      />
+    </view>
+    <view class="field">
+      <view class="label">人生感悟</view>
+      <textarea
+        class="textarea"
+        placeholder="您想留给后人什么话？对人生的理解……"
+        value="{{form.insight}}"
+        data-field="insight"
+        bindinput="onInput"
+        maxlength="-1"
+        auto-height
+      />
+    </view>
+
+    <view class="style-section">
+      <view class="label">选择写作风格</view>
+      <view class="style-list">
+        <view
+          wx:for="{{styleList}}"
+          wx:key="key"
+          class="style-item {{selectedStyle === item.key ? 'active' : ''}}"
+          data-style="{{item.key}}"
+          bindtap="selectStyle"
+        >
+          <view class="style-label">{{item.label}}</view>
+          <view class="style-desc">{{item.desc}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="footer">
+    <button class="btn btn-secondary" wx:if="{{currentStep > 0}}" bindtap="prevStep">上一步</button>
+    <button class="btn btn-primary" wx:if="{{currentStep < totalSteps - 1}}" bindtap="nextStep">下一步</button>
+    <button class="btn btn-primary" wx:if="{{currentStep === totalSteps - 1}}" bindtap="generate">生成传记</button>
+  </view>
+</view>

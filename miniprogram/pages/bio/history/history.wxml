@@ -1,0 +1,36 @@
+<view class="page">
+  <view wx:if="{{list.length === 0}}" class="empty">
+    <view class="empty-icon">📖</view>
+    <view class="empty-text">还没有保存的传记</view>
+    <button class="empty-btn" bindtap="goHome">去创建传记</button>
+  </view>
+
+  <view wx:else class="list">
+    <view wx:for="{{list}}" wx:key="id" class="item" bindtap="viewDetail" data-id="{{item.id}}">
+      <view class="item-title">{{item.title}}</view>
+      <view class="item-meta">
+        <text>{{item.styleLabel}}</text>
+        <text class="dot">·</text>
+        <text>{{item.dateStr}}</text>
+      </view>
+      <view class="item-preview">{{item.preview}}</view>
+      <view class="item-actions" catchtap="stopProp">
+        <button class="del-btn" size="mini" data-id="{{item.id}}" bindtap="deleteItem">删除</button>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 详情弹层 -->
+<view class="modal-mask" wx:if="{{showDetail}}" bindtap="closeDetail">
+  <view class="modal-content" catchtap="stopProp">
+    <view class="modal-title">{{detail.title}}</view>
+    <scroll-view class="modal-scroll" scroll-y enhanced>
+      <text user-select class="modal-text">{{detail.content}}</text>
+    </scroll-view>
+    <view class="modal-actions">
+      <button class="modal-btn" bindtap="copyDetail">复制</button>
+      <button class="modal-btn primary" bindtap="closeDetail">关闭</button>
+    </view>
+  </view>
+</view>

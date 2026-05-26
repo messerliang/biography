@@ -1,0 +1,149 @@
+.page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #faf6f0;
+}
+
+.chat-header {
+  padding: 20rpx 32rpx;
+  background: #f0ebe3;
+}
+
+.chat-tip {
+  font-size: 24rpx;
+  color: #8b7355;
+  line-height: 1.5;
+}
+
+.chat-list {
+  flex: 1;
+  padding: 24rpx 32rpx;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.msg-row {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 28rpx;
+  gap: 16rpx;
+}
+
+.msg-row.user {
+  flex-direction: row-reverse;
+}
+
+.avatar {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background: #c4a574;
+  color: #fff;
+  font-size: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.user-avatar {
+  background: #8b6914;
+}
+
+.bubble {
+  max-width: 70%;
+  padding: 20rpx 28rpx;
+  border-radius: 20rpx;
+  font-size: 28rpx;
+  line-height: 1.6;
+  color: #3d2b1f;
+  background: #fff;
+  box-shadow: 0 4rpx 16rpx rgba(61, 43, 31, 0.06);
+}
+
+.user .bubble {
+  background: #3d2b1f;
+  color: #faf6f0;
+}
+
+.typing .cursor {
+  animation: blink 0.8s infinite;
+  color: #c4a574;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.chat-footer {
+  padding: 16rpx 32rpx calc(16rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  border-top: 1rpx solid #e8dfd3;
+}
+
+.style-picker {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+  font-size: 24rpx;
+}
+
+.style-label {
+  color: #a89580;
+}
+
+.style-value {
+  color: #8b6914;
+  font-weight: 500;
+}
+
+.input-row {
+  display: flex;
+  gap: 16rpx;
+  align-items: center;
+}
+
+.chat-input {
+  flex: 1;
+  background: #f5efe6;
+  border-radius: 40rpx;
+  padding: 0 28rpx;
+  height: 72rpx;
+  font-size: 28rpx;
+}
+
+.send-btn {
+  width: 120rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  padding: 0;
+  background: #c4a574;
+  color: #fff;
+  font-size: 26rpx;
+  border-radius: 36rpx;
+  border: none;
+}
+
+.send-btn[disabled] {
+  background: #ddd;
+  color: #999;
+}
+
+.generate-btn {
+  margin-top: 16rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  background: linear-gradient(135deg, #c4a574, #8b6914);
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 600;
+  border-radius: 40rpx;
+  border: none;
+}
+
+.generate-btn[disabled] {
+  background: #ddd;
+  color: #999;
+}
