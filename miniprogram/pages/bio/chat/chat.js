@@ -1,26 +1,105 @@
-const { STYLES, INTERVIEW_SYSTEM_PROMPT } = require("../../../utils/bio");
-
-const WELCOME =
-  "您好，我是您的传记助手。接下来我会像老朋友一样，慢慢听您讲述人生故事。\n\n我们从童年说起吧——您小时候在哪里长大？家里有哪些让您印象深刻的人？";
+const {
+  getStyleGroupsForUI,
+  getStyleLabel,
+  getChatMaterialStats,
+  streamChatReply,
+  navigateToGenerate,
+  saveChatDraft,
+  getChatDraft,
+  clearChatDraft,
+  getDefaultChatDraft,
+  WELCOME_MESSAGE,
+} = require("../../../utils/bio");
+const { createRecorderSession } = require("../../../utils/voiceInput");
 
 Page({
   data: {
-    messages: [{ role: "assistant", content: WELCOME }],
+    messages: [{ role: "assistant", content: WELCOME_MESSAGE }],
     inputValue: "",
     isTyping: false,
     typingText: "",
     scrollTo: "",
-    styleIndex: 0,
-    styleLabels: Object.values(STYLES).map((s) => s.label),
-    styleKeys: Object.keys(STYLES),
+    selectedStyle: "narrative",
+    styleLabel: getStyleLabel("narrative"),
+    styleGroups: getStyleGroupsForUI(),
+    showStylePicker: false,
+    materialTip: "",
+    materialSufficient: false,
+    userMsgCount: 0,
+    recording: false,
+    voiceStatus: "",
+  },
+
+  recorderSession: null,
+
+  onLoad() {
+    const draft = getChatDraft();
+    if (draft && draft.messages && draft.messages.length > 1) {
+      wx.showModal({
+        title: "发现未完成访谈",
+        content: "是否继续上次访谈内容？",
+        confirmColor: "#8b6914",
+        success: (res) => {
+          if (res.confirm) {
+            this.applyDraft(draft);
+          } else {
+            clearChatDraft();
+            this.updateMaterialStats();
+          }
+        },
+      });
+    } else {
+      this.updateMaterialStats();
+    }
+  },
+
+  onUnload() {
+    this.saveDraft();
+    if (this.recorderSession) this.recorderSession.cancel();
+  },
+
+  applyDraft(draft) {
+    this.setData({
+      messages: draft.messages,
+      selectedStyle: draft.selectedStyle || "narrative",
+      styleLabel: getStyleLabel(draft.selectedStyle || "narrative"),
+    });
+    this.updateMaterialStats();
+  },
+
+  saveDraft() {
+    if (this.data.messages.length <= 1) return;
+    saveChatDraft({
+      messages: this.data.messages,
+      selectedStyle: this.data.selectedStyle,
+    });
+  },
+
+  updateMaterialStats() {
+    const stats = getChatMaterialStats(this.data.messages);
+    this.setData({
+      materialTip: stats.tip,
+      materialSufficient: stats.sufficient,
+      userMsgCount: stats.userCount,
+    });
   },
 
   onInput(e) {
     this.setData({ inputValue: e.detail.value });
   },
 
-  onStyleChange(e) {
-    this.setData({ styleIndex: Number(e.detail.value) });
+  toggleStylePicker() {
+    this.setData({ showStylePicker: !this.data.showStylePicker });
+  },
+
+  selectStyle(e) {
+    const style = e.currentTarget.dataset.style;
+    this.setData({
+      selectedStyle: style,
+      styleLabel: getStyleLabel(style),
+      showStylePicker: false,
+    });
+    this.saveDraft();
   },
 
   scrollToBottom() {
@@ -30,8 +109,15 @@ Page({
     }, 50);
   },
 
-  async sendMessage() {
-    const text = this.data.inputValue.trim();
+  async sendMessage(e) {
+    let text = "";
+    if (typeof e === "string") {
+      text = e.trim();
+    } else if (e && e.detail && typeof e.detail.value === "string") {
+      text = e.detail.value.trim();
+    } else {
+      text = this.data.inputValue.trim();
+    }
     if (!text || this.data.isTyping) return;
 
     const userMessages = [
@@ -53,33 +139,10 @@ Page({
         content: m.content,
       }));
 
-      const ai = wx.cloud.extend.AI;
-      const aiModel = ai.createModel("deepseek");
-      const res = await aiModel.streamText({
-        data: {
-          model: "deepseek-v3.2",
-          messages: [{ role: "system", content: INTERVIEW_SYSTEM_PROMPT }, ...apiMessages],
-        },
+      let fullText = await streamChatReply(apiMessages, (replyText) => {
+        this.setData({ typingText: replyText });
+        this.scrollToBottom();
       });
-
-      let fullText = "";
-      for await (const event of res.eventStream) {
-        const { data: eventData } = event;
-        try {
-          const dataJson = JSON.parse(eventData);
-          const { choices = [] } = dataJson || {};
-          const { delta, finish_reason } = choices[0] || {};
-          if (finish_reason === "stop") break;
-          const chunk = delta?.content || "";
-          if (chunk) {
-            fullText += chunk;
-            this.setData({ typingText: fullText });
-            this.scrollToBottom();
-          }
-        } catch (e) {
-          break;
-        }
-      }
 
       if (!fullText) {
         fullText = "抱歉，我没有听清楚，能再说一遍吗？";
@@ -90,6 +153,8 @@ Page({
         isTyping: false,
         typingText: "",
       });
+      this.saveDraft();
+      this.updateMaterialStats();
     } catch (err) {
       console.error(err);
       wx.showToast({ title: "发送失败，请重试", icon: "none" });
@@ -98,23 +163,80 @@ Page({
     this.scrollToBottom();
   },
 
+  onVoiceTouchStart() {
+    if (this.data.isTyping || this.data.recording) return;
+    this.recorderSession = createRecorderSession({
+      onStatusChange: (status) => {
+        const map = {
+          recording: "正在聆听，松手发送…",
+          transcribing: "识别中…",
+          idle: "",
+        };
+        this.setData({
+          voiceStatus: map[status] || "",
+          recording: status === "recording",
+        });
+      },
+    });
+    this.recorderSession.begin();
+  },
+
+  onVoiceTouchEnd() {
+    if (!this.data.recording || !this.recorderSession) return;
+    this.recorderSession
+      .end()
+      .then((text) => {
+        this.setData({ recording: false, voiceStatus: "" });
+        if (text) this.sendMessage(text);
+      })
+      .catch((err) => {
+        console.error(err);
+        wx.showToast({ title: "语音识别失败", icon: "none" });
+        this.setData({ recording: false, voiceStatus: "" });
+      });
+  },
+
+  onVoiceTouchCancel() {
+    if (this.recorderSession) this.recorderSession.cancel();
+    this.setData({ recording: false, voiceStatus: "" });
+  },
+
   generateBiography() {
     const chatMessages = this.data.messages.filter(
       (m) => m.role === "user" || m.role === "assistant"
     );
-    if (chatMessages.length < 2) {
-      wx.showToast({ title: "请至少聊几句再生成", icon: "none" });
+    const stats = getChatMaterialStats(chatMessages);
+
+    const proceed = () => {
+      clearChatDraft();
+      navigateToGenerate({
+        source: "chat",
+        style: this.data.selectedStyle,
+        data: { messages: chatMessages },
+      });
+    };
+
+    if (!stats.sufficient) {
+      wx.showModal({
+        title: "素材可能不足",
+        content: `${stats.tip}。内容较少时传记可能较简略，是否仍要生成？`,
+        confirmText: "继续生成",
+        cancelText: "再聊聊",
+        confirmColor: "#8b6914",
+        success: (res) => {
+          if (res.confirm) proceed();
+        },
+      });
       return;
     }
 
-    const style = this.data.styleKeys[this.data.styleIndex];
-    const payload = encodeURIComponent(
-      JSON.stringify({
-        source: "chat",
-        style,
-        data: { messages: chatMessages },
-      })
-    );
-    wx.navigateTo({ url: `/pages/bio/result/result?payload=${payload}` });
+    proceed();
+  },
+
+  onShareAppMessage() {
+    return {
+      title: "我正在用「人生传记」记录人生故事",
+      path: "/pages/bio/home/home",
+    };
   },
 });

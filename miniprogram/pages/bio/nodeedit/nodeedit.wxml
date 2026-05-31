@@ -1,0 +1,50 @@
+<view class="page-wrap">
+  <view class="page">
+    <view class="tip" wx:if="{{isExample}}">
+      <text class="tip-icon">💡</text>
+      <text>这是示例内容，您可以直接修改或替换为自己的经历</text>
+    </view>
+
+    <view class="form-section">
+      <view class="field">
+        <view class="label">时间</view>
+        <input
+          class="input"
+          placeholder="如：1990年7月、2008年"
+          value="{{date}}"
+          data-field="date"
+          bindinput="onInput"
+        />
+      </view>
+
+      <view class="field">
+        <view class="label">节点名称</view>
+        <input
+          class="input"
+          placeholder="如：出生、求学、结婚、创业"
+          value="{{title}}"
+          data-field="title"
+          bindinput="onInput"
+        />
+      </view>
+
+      <view class="field">
+        <view class="label">事件描述</view>
+        <textarea
+          class="textarea"
+          placeholder="详细描述这个人生阶段发生了什么、您的感受与意义……"
+          value="{{description}}"
+          data-field="description"
+          bindinput="onInput"
+          maxlength="-1"
+          auto-height
+        />
+      </view>
+    </view>
+  </view>
+
+  <view class="footer">
+    <button class="btn btn-danger" wx:if="{{totalCount > 1}}" bindtap="deleteNode">删除节点</button>
+    <button class="btn btn-primary" bindtap="save">保存并返回</button>
+  </view>
+</view>

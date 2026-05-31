@@ -1,6 +1,10 @@
 <view class="page">
   <view class="chat-header">
-    <view class="chat-tip">AI 会像朋友一样，引导您回忆人生故事。讲述完毕后，点击底部按钮生成传记。</view>
+    <view class="chat-tip">AI 会像朋友一样，引导您回忆人生故事。可文字输入或按住说话。</view>
+    <view class="material-bar {{materialSufficient ? 'ok' : ''}}" wx:if="{{userMsgCount > 0 || materialTip}}">
+      <text wx:if="{{materialSufficient}}">素材已较充分，可以生成传记</text>
+      <text wx:else>{{materialTip || '建议多聊几轮再生成'}}</text>
+    </view>
   </view>
 
   <scroll-view
@@ -31,14 +35,41 @@
   </scroll-view>
 
   <view class="chat-footer">
-    <view class="style-picker">
-      <text class="style-label">风格：</text>
-      <picker mode="selector" range="{{styleLabels}}" value="{{styleIndex}}" bindchange="onStyleChange">
-        <view class="style-value">{{styleLabels[styleIndex]}} ▾</view>
-      </picker>
+    <view class="style-section">
+      <view class="style-header" bindtap="toggleStylePicker">
+        <text class="style-label">传记风格</text>
+        <text class="style-value">{{styleLabel}}</text>
+        <text class="style-arrow">{{showStylePicker ? '▲' : '▼'}}</text>
+      </view>
+      <view class="style-panel" wx:if="{{showStylePicker}}">
+        <block wx:for="{{styleGroups}}" wx:key="key">
+          <view class="style-group-title">{{item.label}}</view>
+          <view
+            class="style-option {{selectedStyle === styleItem.key ? 'active' : ''}}"
+            wx:for="{{item.styles}}"
+            wx:for-item="styleItem"
+            wx:key="key"
+            bindtap="selectStyle"
+            data-style="{{styleItem.key}}"
+          >
+            <view class="style-option-name">{{styleItem.label}}</view>
+            <view class="style-option-desc">{{styleItem.desc}}</view>
+          </view>
+        </block>
+      </view>
     </view>
 
+    <view class="voice-status" wx:if="{{voiceStatus}}">{{voiceStatus}}</view>
+
     <view class="input-row">
+      <view
+        class="voice-btn {{recording ? 'recording' : ''}}"
+        bindtouchstart="onVoiceTouchStart"
+        bindtouchend="onVoiceTouchEnd"
+        bindtouchcancel="onVoiceTouchCancel"
+      >
+        🎙
+      </view>
       <input
         class="chat-input"
         placeholder="讲述您的故事……"
@@ -46,12 +77,12 @@
         bindinput="onInput"
         confirm-type="send"
         bindconfirm="sendMessage"
-        disabled="{{isTyping}}"
+        disabled="{{isTyping || recording}}"
       />
-      <button class="send-btn" bindtap="sendMessage" disabled="{{isTyping || !inputValue.trim()}}">发送</button>
+      <button class="send-btn" bindtap="sendMessage" disabled="{{isTyping || recording || !inputValue.trim()}}">发送</button>
     </view>
 
-    <button class="generate-btn" bindtap="generateBiography" disabled="{{isTyping || messages.length < 2}}">
+    <button class="generate-btn" bindtap="generateBiography" disabled="{{isTyping || recording || messages.length < 2}}">
       讲述完毕，生成传记
     </button>
   </view>

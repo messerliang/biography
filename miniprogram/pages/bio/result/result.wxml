@@ -4,7 +4,21 @@
     <view class="status" wx:if="{{generating}}">
       <text class="dot">●</text> 正在撰写中……
     </view>
-    <view class="status done" wx:elif="{{!generating && content}}">撰写完成</view>
+    <view class="status done" wx:elif="{{saved}}">已保存至我的传记</view>
+    <view class="status done" wx:elif="{{!generating && content && !generateFailed}}">撰写完成，请保存</view>
+  </view>
+
+  <view class="save-banner" wx:if="{{!generating && content && !generateFailed && !saved}}">
+    <view class="save-banner-icon">📚</view>
+    <view class="save-banner-text">
+      <view class="save-banner-title">传记已生成</view>
+      <view class="save-banner-desc">保存后可在首页「我的传记」中随时查看、分享与导出</view>
+    </view>
+  </view>
+
+  <view class="saved-banner" wx:if="{{saved}}">
+    <view class="saved-banner-icon">✓</view>
+    <view class="saved-banner-text">已成功保存，前往「我的传记」查看</view>
   </view>
 
   <scroll-view class="content-scroll" scroll-y enhanced show-scrollbar="{{false}}">
@@ -15,7 +29,16 @@
   </scroll-view>
 
   <view class="actions" wx:if="{{!generating}}">
-    <button class="action-btn secondary" bindtap="copyContent">复制全文</button>
-    <button class="action-btn primary" bindtap="saveContent">保存传记</button>
+    <view class="error-tip" wx:if="{{generateFailed}}">{{errorMessage}}</view>
+    <button class="action-btn secondary" wx:if="{{generateFailed}}" bindtap="retryGenerate">重新生成</button>
+    <button class="action-btn secondary" open-type="share" wx:if="{{content && !generateFailed}}">分享给好友</button>
+    <button class="action-btn secondary" bindtap="exportContent" loading="{{exporting}}" wx:if="{{content}}">导出长图</button>
+    <button class="action-btn secondary" bindtap="copyContent" wx:if="{{content}}">复制全文</button>
+    <button class="action-btn primary" bindtap="saveContent" wx:if="{{content && !generateFailed && !saved}}">
+      保存至我的传记
+    </button>
+    <button class="action-btn primary" bindtap="goHistory" wx:if="{{saved}}">查看我的传记</button>
   </view>
 </view>
+
+<canvas canvas-id="exportCanvas" class="export-canvas"></canvas>

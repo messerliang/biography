@@ -1,10 +1,11 @@
 const {
   FORM_STEPS,
-  STYLES,
+  getStyleGroupsForUI,
   getDefaultForm,
   getFormDraft,
   saveFormDraft,
   clearFormDraft,
+  navigateToGenerate,
 } = require("../../../utils/bio");
 
 Page({
@@ -15,7 +16,7 @@ Page({
     progressPercent: 20,
     form: getDefaultForm(),
     selectedStyle: "narrative",
-    styleList: Object.entries(STYLES).map(([key, val]) => ({ key, ...val })),
+    styleGroups: getStyleGroupsForUI(),
   },
 
   onLoad() {
@@ -88,13 +89,10 @@ Page({
     }
 
     clearFormDraft();
-    const payload = encodeURIComponent(
-      JSON.stringify({
-        source: "form",
-        style: this.data.selectedStyle,
-        data: form,
-      })
-    );
-    wx.navigateTo({ url: `/pages/bio/result/result?payload=${payload}` });
+    navigateToGenerate({
+      source: "form",
+      style: this.data.selectedStyle,
+      data: form,
+    });
   },
 });

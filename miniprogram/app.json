@@ -6,6 +6,8 @@
     "pages/bio/video/video",
     "pages/bio/result/result",
     "pages/bio/history/history",
+    "pages/bio/timeline/timeline",
+    "pages/bio/nodeedit/nodeedit",
     "pages/index/index",
     "pages/chatBot/chatBot",
     "pages/foodBuy/foodBuy"
@@ -28,9 +30,17 @@
   "style": "v2",
   "lazyCodeLoading": "requiredComponents",
   "networkTimeout": {
-    "request": 300000,
-    "connectSocket": 60000,
-    "uploadFile": 300000,
-    "downloadFile": 60000
+    "request": 600000,
+    "connectSocket": 120000,
+    "uploadFile": 600000,
+    "downloadFile": 120000
+  },
+  "permission": {
+    "scope.record": {
+      "desc": "用于语音输入访谈内容"
+    },
+    "scope.writePhotosAlbum": {
+      "desc": "用于导出传记长图到相册"
+    }
   }
 }

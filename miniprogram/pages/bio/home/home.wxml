@@ -2,47 +2,70 @@
   <view class="hero">
     <view class="hero-title">人生传记</view>
     <view class="hero-subtitle">记录故事，传承记忆</view>
-    <view class="hero-desc">三种方式，帮您把人生经历写成一篇温暖的传记</view>
+    <view class="hero-desc">四种方式，选择最适合您的创作路径</view>
   </view>
 
-  <!-- 视频导入快捷区 -->
-  <view class="video-zone" bindtap="goVideo">
-    <view class="video-zone-left">
-      <view class="video-zone-icon">🎬</view>
-      <view class="video-zone-text">
-        <view class="video-zone-title">导入视频解析</view>
-        <view class="video-zone-desc">上传口述视频，AI 自动提取语音并生成传记</view>
+  <!-- 推荐：时间轴（深色） -->
+  <view class="section">
+    <view class="featured-dark" bindtap="goTimeline">
+      <view class="featured-dark-head">
+        <text class="featured-dark-label">时间轴创作</text>
+        <text class="featured-dark-badge">推荐</text>
       </view>
+      <view class="featured-dark-main">
+        <view class="featured-dark-icon">📅</view>
+        <view class="featured-dark-text">
+          <view class="featured-dark-title">时间轴填写</view>
+          <view class="featured-dark-desc">按人生节点逐条记录关键事件，清晰梳理一生轨迹</view>
+        </view>
+      </view>
+      <view class="featured-dark-action">开始 ›</view>
     </view>
-    <view class="video-zone-action">导入 ›</view>
   </view>
 
-  <view class="cards">
-    <view class="card" bindtap="goForm">
-      <view class="card-icon form-icon">📝</view>
-      <view class="card-body">
-        <view class="card-title">分步填写</view>
-        <view class="card-desc">按章节填写人生经历，适合已有清晰回忆、想快速成稿的用户</view>
-      </view>
-      <view class="card-arrow">›</view>
+  <!-- 文字记录（浅色） -->
+  <view class="section">
+    <view class="section-head">
+      <text class="section-title">文字记录</text>
+      <text class="section-tip">动笔书写 · 对话回忆</text>
     </view>
-
-    <view class="card" bindtap="goChat">
-      <view class="card-icon chat-icon">💬</view>
-      <view class="card-body">
-        <view class="card-title">AI 访谈</view>
-        <view class="card-desc">像聊天一样被温和引导回忆，适合喜欢口述、不确定从何写起的用户</view>
+    <view class="card-grid">
+      <view class="mini-card" bindtap="goForm">
+        <view class="mini-head">
+          <view class="mini-icon form-icon">📝</view>
+          <view class="mini-title">分步填写</view>
+        </view>
+        <view class="mini-desc">按章节填写，适合回忆清晰、想快速成稿</view>
       </view>
-      <view class="card-arrow">›</view>
+      <view class="mini-card" bindtap="goChat">
+        <view class="mini-head">
+          <view class="mini-icon chat-icon">💬</view>
+          <view class="mini-title">AI 访谈</view>
+        </view>
+        <view class="mini-desc">像聊天一样被引导回忆，适合不知从何说起</view>
+      </view>
     </view>
+  </view>
 
+  <!-- 视频讲述（浅色） -->
+  <view class="section">
+    <view class="section-head">
+      <text class="section-title">视频讲述</text>
+      <text class="section-tip">语音自动识别</text>
+    </view>
     <view class="card" bindtap="goVideo">
-      <view class="card-icon video-icon">🎥</view>
-      <view class="card-body">
-        <view class="card-title">视频口述</view>
-        <view class="card-desc">拍摄或导入讲述视频，自动识别语音内容并整理成传记</view>
+      <view class="card-main">
+        <view class="card-icon video-icon">🎥</view>
+        <view class="card-body">
+          <view class="card-title">视频口述</view>
+          <view class="card-desc">拍摄或从相册导入讲述视频，AI 提取语音并生成传记</view>
+          <view class="light-tags">
+            <text class="light-tag">相册导入</text>
+            <text class="light-tag">现场拍摄</text>
+            <text class="light-tag">最长 10 分钟</text>
+          </view>
+        </view>
       </view>
-      <view class="card-arrow">›</view>
     </view>
   </view>
 

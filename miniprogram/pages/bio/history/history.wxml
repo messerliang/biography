@@ -1,15 +1,59 @@
 <view class="page">
+  <view class="toolbar" wx:if="{{list.length > 0}}">
+    <view class="search-box">
+      <input
+        class="search-input"
+        placeholder="搜索标题或内容"
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+      />
+      <text class="search-clear" wx:if="{{searchKeyword}}" bindtap="clearSearch">清除</text>
+    </view>
+    <scroll-view class="filter-tabs" scroll-x enhanced show-scrollbar="{{false}}">
+      <view
+        class="filter-tab {{filterKey === item.key ? 'active' : ''}}"
+        wx:for="{{filterTabs}}"
+        wx:key="key"
+        bindtap="switchFilter"
+        data-key="{{item.key}}"
+      >
+        {{item.label}}
+      </view>
+    </scroll-view>
+  </view>
+
   <view wx:if="{{list.length === 0}}" class="empty">
     <view class="empty-icon">📖</view>
     <view class="empty-text">还没有保存的传记</view>
     <button class="empty-btn" bindtap="goHome">去创建传记</button>
+
+    <view class="sample-section">
+      <view class="sample-title">看看示例传记</view>
+      <view class="sample-desc">了解 AI 成稿效果，再开始记录您的人生故事</view>
+      <view
+        class="sample-card"
+        wx:for="{{samples}}"
+        wx:key="id"
+        bindtap="viewSample"
+        data-id="{{item.id}}"
+      >
+        <view class="sample-card-title">{{item.title}}</view>
+        <view class="sample-card-preview">{{item.content}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:elif="{{filteredList.length === 0}}" class="empty-mini">
+    <view class="empty-text">没有匹配的传记</view>
   </view>
 
   <view wx:else class="list">
-    <view wx:for="{{list}}" wx:key="id" class="item" bindtap="viewDetail" data-id="{{item.id}}">
+    <view wx:for="{{filteredList}}" wx:key="id" class="item" bindtap="viewDetail" data-id="{{item.id}}">
       <view class="item-title">{{item.title}}</view>
       <view class="item-meta">
         <text>{{item.styleLabel}}</text>
+        <text class="dot">·</text>
+        <text>{{item.sourceLabel}}</text>
         <text class="dot">·</text>
         <text>{{item.dateStr}}</text>
       </view>
@@ -21,16 +65,35 @@
   </view>
 </view>
 
-<!-- 详情弹层 -->
 <view class="modal-mask" wx:if="{{showDetail}}" bindtap="closeDetail">
   <view class="modal-content" catchtap="stopProp">
-    <view class="modal-title">{{detail.title}}</view>
+    <view class="modal-header">
+      <view class="modal-title">{{detail.title}}</view>
+      <view class="modal-meta">{{detail.styleLabel}} · {{detail.sourceLabel}}</view>
+    </view>
+
+    <view class="read-tools">
+      <text class="read-label">字号</text>
+      <text class="read-btn {{fontSizeKey === 'small' ? 'active' : ''}}" bindtap="switchFontSize" data-size="small">小</text>
+      <text class="read-btn {{fontSizeKey === 'medium' ? 'active' : ''}}" bindtap="switchFontSize" data-size="medium">中</text>
+      <text class="read-btn {{fontSizeKey === 'large' ? 'active' : ''}}" bindtap="switchFontSize" data-size="large">大</text>
+    </view>
+
     <scroll-view class="modal-scroll" scroll-y enhanced>
-      <text user-select class="modal-text">{{detail.content}}</text>
+      <text
+        user-select
+        class="modal-text"
+        style="font-size: {{fontSize}}rpx; line-height: {{lineHeight}};"
+      >{{detail.content}}</text>
     </scroll-view>
+
     <view class="modal-actions">
+      <button class="modal-btn" open-type="share">分享</button>
+      <button class="modal-btn" bindtap="exportDetail" loading="{{exporting}}">导出长图</button>
       <button class="modal-btn" bindtap="copyDetail">复制</button>
       <button class="modal-btn primary" bindtap="closeDetail">关闭</button>
     </view>
   </view>
 </view>
+
+<canvas canvas-id="exportCanvas" class="export-canvas"></canvas>

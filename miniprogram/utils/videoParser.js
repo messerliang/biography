@@ -99,6 +99,55 @@ async function speechToText(videoUrl, voiceFormat) {
   return String(text).trim();
 }
 
+function chooseAudio() {
+  return new Promise((resolve, reject) => {
+    wx.chooseMessageFile({
+      count: 1,
+      type: "file",
+      extension: ["mp3", "m4a", "wav", "aac"],
+      success: (res) => {
+        const file = res.tempFiles[0];
+        if (!file) {
+          reject(new Error("未选择音频"));
+          return;
+        }
+        if (file.size > MAX_VIDEO_SIZE) {
+          reject(new Error("音频大小不能超过 100MB"));
+          return;
+        }
+        resolve({
+          tempFilePath: file.path,
+          size: file.size,
+          name: file.name,
+        });
+      },
+      fail: (err) => {
+        if (err.errMsg && err.errMsg.includes("cancel")) {
+          reject(new Error("cancel"));
+        } else {
+          reject(err);
+        }
+      },
+    });
+  });
+}
+
+async function parseAudio({ tempFilePath, onUploadProgress, onStatusChange }) {
+  if (onStatusChange) onStatusChange("uploading");
+  const uploadRes = await uploadVideo(tempFilePath, onUploadProgress);
+  const fileUrl = await getTempFileUrl(uploadRes.fileID);
+
+  if (onStatusChange) onStatusChange("transcribing");
+  const voiceFormat = getVoiceFormat(tempFilePath);
+  const transcript = await speechToText(fileUrl, voiceFormat);
+
+  return {
+    transcript,
+    fileId: uploadRes.fileID,
+    fileUrl,
+  };
+}
+
 async function parseVideo({ tempFilePath, onUploadProgress, onStatusChange }) {
   if (onStatusChange) onStatusChange("uploading");
   const uploadRes = await uploadVideo(tempFilePath, onUploadProgress);
@@ -119,7 +168,9 @@ module.exports = {
   BIO_BOT_ID,
   MAX_VIDEO_DURATION,
   chooseVideo,
+  chooseAudio,
   uploadVideo,
   parseVideo,
+  parseAudio,
   speechToText,
 };

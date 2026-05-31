@@ -21,6 +21,10 @@ Page({
     wx.navigateTo({ url: "/pages/bio/video/video" });
   },
 
+  goTimeline() {
+    wx.navigateTo({ url: "/pages/bio/timeline/timeline" });
+  },
+
   goHistory() {
     wx.navigateTo({ url: "/pages/bio/history/history" });
   },

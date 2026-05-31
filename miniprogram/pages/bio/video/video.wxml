@@ -1,36 +1,44 @@
 <view class="page">
-  <!-- 未选择视频 -->
-  <view class="import-zone" wx:if="{{!videoPath && !parsing}}" bindtap="pickVideo">
-    <view class="import-icon">🎬</view>
-    <view class="import-title">点击导入视频</view>
-    <view class="import-desc">从相册选择或现场拍摄，AI 将提取语音并生成传记</view>
-    <view class="import-tip">支持 mp4/mov，最长 10 分钟，不超过 100MB</view>
+  <view class="mode-tabs">
+    <view class="mode-tab {{mediaMode === 'video' ? 'active' : ''}}" bindtap="switchMode" data-mode="video">视频</view>
+    <view class="mode-tab {{mediaMode === 'audio' ? 'active' : ''}}" bindtap="switchMode" data-mode="audio">音频</view>
   </view>
 
-  <!-- 已选视频 / 解析中 -->
-  <view class="video-panel" wx:if="{{videoPath}}">
+  <view class="import-zone" wx:if="{{!mediaPath && !parsing}}" bindtap="pickMedia">
+    <view class="import-icon">{{mediaMode === 'audio' ? '🎵' : '🎬'}}</view>
+    <view class="import-title">{{mediaMode === 'audio' ? '点击导入音频' : '点击导入视频'}}</view>
+    <view class="import-desc">{{mediaMode === 'audio' ? '从聊天记录或文件中选择音频，AI 将提取语音并生成传记' : '从相册选择或现场拍摄，AI 将提取语音并生成传记'}}</view>
+    <view class="import-tip">{{mediaMode === 'audio' ? '支持 mp3/m4a/wav/aac，不超过 100MB' : '支持 mp4/mov，最长 10 分钟，不超过 100MB'}}</view>
+  </view>
+
+  <view class="video-panel" wx:if="{{mediaPath}}">
     <video
+      wx:if="{{mediaMode === 'video'}}"
       class="video-preview"
-      src="{{videoPath}}"
+      src="{{mediaPath}}"
       controls
       object-fit="contain"
       poster="{{videoThumb}}"
     />
 
-    <view class="video-meta">
+    <view class="audio-preview" wx:if="{{mediaMode === 'audio'}}">
+      <view class="audio-icon">🎵</view>
+      <view class="audio-name">{{mediaName}}</view>
+      <view class="audio-size">{{sizeText}}</view>
+    </view>
+
+    <view class="video-meta" wx:if="{{mediaMode === 'video'}}">
       <text>时长 {{durationText}}</text>
       <text class="dot">·</text>
       <text>{{sizeText}}</text>
     </view>
 
-    <!-- 解析进度 -->
     <view class="status-box" wx:if="{{parsing}}">
       <view class="status-title">{{statusText}}</view>
       <progress percent="{{uploadProgress}}" stroke-width="6" activeColor="#c4a574" backgroundColor="#e8dfd3" />
       <view class="status-tip">{{statusTip}}</view>
     </view>
 
-    <!-- 解析结果 -->
     <view class="transcript-box" wx:if="{{transcript && !parsing}}">
       <view class="transcript-header">
         <text class="transcript-label">识别文字（可编辑）</text>
@@ -45,40 +53,32 @@
       />
     </view>
 
-    <!-- 风格选择 -->
     <view class="style-section" wx:if="{{transcript && !parsing}}">
       <view class="style-label">写作风格</view>
-      <view class="style-list">
-        <view
-          wx:for="{{styleList}}"
-          wx:key="key"
-          class="style-item {{selectedStyle === item.key ? 'active' : ''}}"
-          data-style="{{item.key}}"
-          bindtap="selectStyle"
-        >
-          <view class="style-name">{{item.label}}</view>
-          <view class="style-desc">{{item.desc}}</view>
+      <block wx:for="{{styleGroups}}" wx:key="key">
+        <view class="style-group-title">{{item.label}}</view>
+        <view class="style-list">
+          <view
+            wx:for="{{item.styles}}"
+            wx:for-item="styleItem"
+            wx:key="key"
+            class="style-item {{selectedStyle === styleItem.key ? 'active' : ''}}"
+            data-style="{{styleItem.key}}"
+            bindtap="selectStyle"
+          >
+            <view class="style-name">{{styleItem.label}}</view>
+            <view class="style-desc">{{styleItem.desc}}</view>
+          </view>
         </view>
-      </view>
+      </block>
     </view>
   </view>
 
-  <view class="footer" wx:if="{{videoPath}}">
-    <button class="btn btn-secondary" bindtap="resetVideo" disabled="{{parsing}}">换一段视频</button>
-    <button
-      class="btn btn-primary"
-      wx:if="{{!transcript}}"
-      bindtap="startParse"
-      disabled="{{parsing}}"
-    >
+  <view class="footer" wx:if="{{mediaPath}}">
+    <button class="btn btn-secondary" bindtap="resetMedia" disabled="{{parsing}}">换一个文件</button>
+    <button class="btn btn-primary" wx:if="{{!transcript}}" bindtap="startParse" disabled="{{parsing}}">
       {{parsing ? '解析中...' : '开始解析'}}
     </button>
-    <button
-      class="btn btn-primary"
-      wx:if="{{transcript && !parsing}}"
-      bindtap="generateBio"
-    >
-      生成传记
-    </button>
+    <button class="btn btn-primary" wx:if="{{transcript && !parsing}}" bindtap="generateBio">生成传记</button>
   </view>
 </view>
