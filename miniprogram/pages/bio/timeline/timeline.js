@@ -32,11 +32,12 @@ Page({
   },
 
   onLoad() {
-    this.loadDraft(false);
+    this._shownOnce = false;
   },
 
   onShow() {
-    this.loadDraft(true);
+    this.loadDraft(this._shownOnce);
+    this._shownOnce = true;
   },
 
   loadDraft(silent) {
@@ -65,15 +66,20 @@ Page({
 
   buildDisplayNodes(nodes, manualSort) {
     const manual = manualSort !== undefined ? manualSort : this.data.manualSort;
-    return sortTimelineNodes(nodes, { manualSort: manual }).map((node) => ({
-      ...node,
-      filled: isNodeFilled(node),
-      descPreview: node.description
+    return sortTimelineNodes(nodes, { manualSort: manual }).map((node) => {
+      const hasDesc = !!node.description;
+      const descPreview = hasDesc
         ? node.description.length > 72
           ? `${node.description.slice(0, 72)}…`
           : node.description
-        : "",
-    }));
+        : "点击添加事件描述…";
+      return {
+        ...node,
+        filled: isNodeFilled(node),
+        descPreview,
+        descPlaceholder: !hasDesc,
+      };
+    });
   },
 
   persistDraft() {

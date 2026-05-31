@@ -1,4 +1,12 @@
 <view class="page-wrap">
+  <view class="page-bg">
+    <image class="page-bg-image" src="/assets/bio/timeline-bg.svg" mode="widthFix"/>
+    <view class="page-bg-river"></view>
+    <view class="page-bg-fade"></view>
+    <view class="bg-marker bg-marker-1"></view>
+    <view class="bg-marker bg-marker-2"></view>
+    <view class="bg-marker bg-marker-3"></view>
+  </view>
   <view class="page">
   <view class="header">
     <view class="header-title">梳理人生关键节点</view>
@@ -33,9 +41,7 @@
             </view>
             <view class="node-title" wx:if="{{item.title}}">{{item.title}}</view>
             <view class="node-title placeholder" wx:else>点击填写节点名称</view>
-            <view class="node-desc" wx:if="{{item.descPreview}}">{{item.descPreview}}</view>
-            <view class="node-desc placeholder" wx:elif="{{!item.description}}">点击添加事件描述…</view>
-            <view class="node-desc" wx:else>{{item.description}}</view>
+            <view class="node-desc {{item.descPlaceholder ? 'placeholder' : ''}}">{{item.descPreview}}</view>
           </view>
           <view class="node-sort-actions" wx:if="{{sortMode}}">
             <text class="sort-btn" catchtap="moveNode" data-id="{{item.id}}" data-direction="up">↑ 上移</text>

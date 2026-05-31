@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 686 320" fill="none">
+  <defs>
+    <linearGradient id="darkRiver" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#d4b88a" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#c4a574" stop-opacity="0.08"/>
+    </linearGradient>
+  </defs>
+  <path d="M620 20 C540 80 680 140 580 200 S480 280 520 320" stroke="url(#darkRiver)" stroke-width="72" stroke-linecap="round"/>
+  <path d="M600 30 C550 85 640 130 590 190 S510 265 530 300" stroke="#f5ead5" stroke-width="14" stroke-linecap="round" opacity="0.12"/>
+  <g stroke="#c4a574" stroke-width="1.8" opacity="0.28">
+    <circle cx="480" cy="72" r="9" fill="none"/>
+    <line x1="480" y1="58" x2="480" y2="86"/>
+    <line x1="466" y1="72" x2="494" y2="72"/>
+    <circle cx="480" cy="72" r="2.5" fill="#c4a574" stroke="none"/>
+    <circle cx="580" cy="168" r="7" fill="none"/>
+    <line x1="580" y1="157" x2="580" y2="179"/>
+    <line x1="569" y1="168" x2="591" y2="168"/>
+    <circle cx="580" cy="168" r="2" fill="#c4a574" stroke="none"/>
+    <circle cx="640" cy="248" r="6" fill="none"/>
+    <line x1="640" y1="239" x2="640" y2="257"/>
+    <line x1="631" y1="248" x2="649" y2="248"/>
+    <circle cx="640" cy="248" r="1.5" fill="#c4a574" stroke="none"/>
+  </g>
+</svg>

@@ -24,7 +24,7 @@
     "navigationBarTitleText": "人生传记",
     "backgroundColor": "#eeeeee",
     "backgroundTextStyle": "light",
-    "enablePullDownRefresh": true
+    "enablePullDownRefresh": false
   },
   "sitemapLocation": "sitemap.json",
   "style": "v2",
@@ -34,13 +34,5 @@
     "connectSocket": 120000,
     "uploadFile": 600000,
     "downloadFile": 120000
-  },
-  "permission": {
-    "scope.record": {
-      "desc": "用于语音输入访谈内容"
-    },
-    "scope.writePhotosAlbum": {
-      "desc": "用于导出传记长图到相册"
-    }
   }
 }

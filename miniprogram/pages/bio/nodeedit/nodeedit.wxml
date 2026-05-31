@@ -1,4 +1,11 @@
 <view class="page-wrap">
+  <view class="page-bg">
+    <image class="page-bg-image" src="/assets/bio/timeline-bg.svg" mode="widthFix"/>
+    <view class="page-bg-river"></view>
+    <view class="page-bg-fade"></view>
+    <view class="bg-marker bg-marker-1"></view>
+    <view class="bg-marker bg-marker-2"></view>
+  </view>
   <view class="page">
     <view class="tip" wx:if="{{isExample}}">
       <text class="tip-icon">💡</text>

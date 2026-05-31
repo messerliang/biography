@@ -1,25 +1,36 @@
 <view class="page">
   <view class="hero">
-    <view class="hero-title">人生传记</view>
-    <view class="hero-subtitle">记录故事，传承记忆</view>
+    <view class="hero-top">
+      <view class="hero-title">人生传记</view>
+      <view class="hero-divider"></view>
+      <view class="hero-subtitle">
+        <view class="hero-subtitle-line">记录故事</view>
+        <view class="hero-subtitle-line">传承记忆</view>
+      </view>
+    </view>
     <view class="hero-desc">四种方式，选择最适合您的创作路径</view>
   </view>
 
-  <!-- 推荐：时间轴（深色） -->
+  <!-- 时间轴创作 -->
   <view class="section">
+    <view class="section-head">
+      <text class="section-title">时间轴创作</text>
+      <text class="section-tip section-tip-gold">推荐</text>
+    </view>
     <view class="featured-dark" bindtap="goTimeline">
-      <view class="featured-dark-head">
-        <text class="featured-dark-label">时间轴创作</text>
-        <text class="featured-dark-badge">推荐</text>
-      </view>
-      <view class="featured-dark-main">
-        <view class="featured-dark-icon">📅</view>
-        <view class="featured-dark-text">
-          <view class="featured-dark-title">时间轴填写</view>
-          <view class="featured-dark-desc">按人生节点逐条记录关键事件，清晰梳理一生轨迹</view>
+      <image class="featured-dark-deco" src="/assets/bio/timeline-card-deco.svg" mode="aspectFill"/>
+      <view class="featured-dark-content">
+        <view class="featured-dark-main">
+          <view class="featured-dark-icon">
+            <image class="card-icon-img card-icon-img--dark" src="/assets/bio/icons/icon-timeline-dark.svg" mode="aspectFit"/>
+          </view>
+          <view class="featured-dark-text">
+            <view class="featured-dark-title">时间轴填写</view>
+            <view class="featured-dark-desc">按人生节点逐条记录关键事件，清晰梳理一生轨迹</view>
+          </view>
         </view>
+        <view class="featured-dark-action">开始 ›</view>
       </view>
-      <view class="featured-dark-action">开始 ›</view>
     </view>
   </view>
 
@@ -32,14 +43,18 @@
     <view class="card-grid">
       <view class="mini-card" bindtap="goForm">
         <view class="mini-head">
-          <view class="mini-icon form-icon">📝</view>
+          <view class="mini-icon form-icon">
+            <image class="card-icon-img" src="/assets/bio/icons/icon-form.svg" mode="aspectFit"/>
+          </view>
           <view class="mini-title">分步填写</view>
         </view>
         <view class="mini-desc">按章节填写，适合回忆清晰、想快速成稿</view>
       </view>
       <view class="mini-card" bindtap="goChat">
         <view class="mini-head">
-          <view class="mini-icon chat-icon">💬</view>
+          <view class="mini-icon chat-icon">
+            <image class="card-icon-img" src="/assets/bio/icons/icon-chat.svg" mode="aspectFit"/>
+          </view>
           <view class="mini-title">AI 访谈</view>
         </view>
         <view class="mini-desc">像聊天一样被引导回忆，适合不知从何说起</view>
@@ -55,7 +70,9 @@
     </view>
     <view class="card" bindtap="goVideo">
       <view class="card-main">
-        <view class="card-icon video-icon">🎥</view>
+        <view class="card-icon video-icon">
+          <image class="card-icon-img card-icon-img--lg" src="/assets/bio/icons/icon-video.svg" mode="aspectFit"/>
+        </view>
         <view class="card-body">
           <view class="card-title">视频口述</view>
           <view class="card-desc">拍摄或从相册导入讲述视频，AI 提取语音并生成传记</view>

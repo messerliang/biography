@@ -1,15 +1,147 @@
 .page-wrap {
+  position: relative;
   min-height: 100vh;
-  background: #faf6f0;
+  background: linear-gradient(180deg, #faf6f0 0%, #f5efe6 100%);
+}
+
+.page-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.page-bg-image {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  opacity: 0.72;
+}
+
+.page-bg-river {
+  position: absolute;
+  right: -80rpx;
+  top: 60rpx;
+  width: 260rpx;
+  height: 130%;
+  background: linear-gradient(
+    165deg,
+    rgba(212, 184, 138, 0.16) 0%,
+    rgba(196, 165, 116, 0.1) 35%,
+    rgba(196, 165, 116, 0.04) 65%,
+    transparent 100%
+  );
+  transform: rotate(-8deg);
+  border-radius: 45% 55% 50% 50%;
+}
+
+.page-bg-fade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(250, 246, 240, 0.15) 0%,
+    rgba(245, 239, 230, 0.55) 35%,
+    rgba(245, 239, 230, 0.88) 70%,
+    rgba(245, 239, 230, 0.96) 100%
+  );
+}
+
+.bg-marker {
+  position: absolute;
+  width: 36rpx;
+  height: 36rpx;
+  border: 2rpx solid rgba(196, 165, 116, 0.22);
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.bg-marker::before,
+.bg-marker::after {
+  content: '';
+  position: absolute;
+  background: rgba(196, 165, 116, 0.18);
+}
+
+.bg-marker::before {
+  top: 50%;
+  left: -14rpx;
+  right: -14rpx;
+  height: 2rpx;
+  transform: translateY(-50%);
+}
+
+.bg-marker::after {
+  left: 50%;
+  top: -14rpx;
+  bottom: -14rpx;
+  width: 2rpx;
+  transform: translateX(-50%);
+}
+
+.bg-marker-1 {
+  top: 18%;
+  right: 12%;
+}
+
+.bg-marker-2 {
+  top: 46%;
+  right: 6%;
+  width: 28rpx;
+  height: 28rpx;
+  opacity: 0.75;
+}
+
+.bg-marker-3 {
+  top: 72%;
+  right: 16%;
+  width: 24rpx;
+  height: 24rpx;
+  opacity: 0.6;
 }
 
 .page {
+  position: relative;
+  z-index: 1;
   padding: 0 40rpx 200rpx;
   box-sizing: border-box;
 }
 
 .header {
+  position: relative;
   padding: 32rpx 0 40rpx;
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  top: 8rpx;
+  right: 0;
+  width: 48rpx;
+  height: 48rpx;
+  border: 2rpx solid rgba(196, 165, 116, 0.2);
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.header::after {
+  content: '';
+  position: absolute;
+  top: 20rpx;
+  right: 12rpx;
+  width: 24rpx;
+  height: 24rpx;
+  border: 2rpx solid rgba(196, 165, 116, 0.14);
+  border-radius: 50%;
+  box-sizing: border-box;
 }
 
 .header-title {
@@ -116,9 +248,18 @@
   left: 14rpx;
   top: 24rpx;
   bottom: 24rpx;
-  width: 4rpx;
-  background: linear-gradient(180deg, #c4a574 0%, #e8dfd3 100%);
-  border-radius: 2rpx;
+  width: 6rpx;
+  background: linear-gradient(
+    180deg,
+    rgba(212, 184, 138, 0.55) 0%,
+    rgba(196, 165, 116, 0.35) 40%,
+    rgba(196, 165, 116, 0.18) 75%,
+    rgba(232, 223, 211, 0.5) 100%
+  );
+  border-radius: 6rpx;
+  box-shadow:
+    0 0 20rpx rgba(196, 165, 116, 0.2),
+    inset 0 0 8rpx rgba(255, 255, 255, 0.35);
 }
 
 .timeline-item {
@@ -130,51 +271,116 @@
 
 .timeline-dot {
   position: absolute;
-  left: -32rpx;
+  left: -36rpx;
   top: 28rpx;
-  width: 20rpx;
-  height: 20rpx;
+  width: 28rpx;
+  height: 28rpx;
   border-radius: 50%;
-  background: #e8dfd3;
-  border: 4rpx solid #faf6f0;
+  background: #fff;
+  border: 3rpx solid rgba(196, 165, 116, 0.55);
   box-sizing: border-box;
-  z-index: 1;
+  z-index: 2;
+}
+
+.timeline-dot::before,
+.timeline-dot::after {
+  content: '';
+  position: absolute;
+  background: rgba(196, 165, 116, 0.32);
+  pointer-events: none;
+}
+
+.timeline-dot::before {
+  top: 50%;
+  left: -16rpx;
+  right: -16rpx;
+  height: 2rpx;
+  transform: translateY(-50%);
+}
+
+.timeline-dot::after {
+  left: 50%;
+  top: -16rpx;
+  bottom: -16rpx;
+  width: 2rpx;
+  transform: translateX(-50%);
 }
 
 .dot-filled {
-  background: #c4a574;
-  box-shadow: 0 0 0 4rpx rgba(196, 165, 116, 0.25);
+  background: linear-gradient(135deg, #e8d4aa 0%, #c4a574 100%);
+  border-color: #b8954f;
+  box-shadow:
+    0 0 0 5rpx rgba(196, 165, 116, 0.18),
+    0 4rpx 12rpx rgba(196, 165, 116, 0.28);
+}
+
+.dot-filled::before,
+.dot-filled::after {
+  background: rgba(196, 165, 116, 0.42);
 }
 
 .dot-example {
-  background: #8b7355;
+  background: linear-gradient(135deg, #a89078 0%, #8b7355 100%);
+  border-color: #8b7355;
+  box-shadow: 0 0 0 5rpx rgba(139, 115, 85, 0.16);
+}
+
+.dot-example::before,
+.dot-example::after {
+  background: rgba(139, 115, 85, 0.35);
 }
 
 .dot-empty {
-  background: #fff;
-  border: 4rpx solid #c4a574;
+  background: rgba(255, 255, 255, 0.95);
+  border: 3rpx solid rgba(196, 165, 116, 0.65);
+  box-shadow: 0 0 0 4rpx rgba(196, 165, 116, 0.1);
 }
 
 .node-card {
+  position: relative;
   flex: 1;
   background: #fff;
-  border-radius: 20rpx;
-  box-shadow: 0 6rpx 24rpx rgba(61, 43, 31, 0.08);
+  border-radius: 24rpx;
+  box-shadow:
+    0 8rpx 32rpx rgba(61, 43, 31, 0.07),
+    0 2rpx 8rpx rgba(61, 43, 31, 0.04);
   overflow: hidden;
+  border: 1rpx solid rgba(232, 223, 211, 0.85);
+}
+
+.node-card::after {
+  content: '';
+  position: absolute;
+  top: 24rpx;
+  right: 24rpx;
+  width: 20rpx;
+  height: 20rpx;
+  border: 2rpx solid rgba(196, 165, 116, 0.12);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.node-card:not(.node-empty):not(.node-example) {
+  border-left: 6rpx solid #c4a574;
 }
 
 .node-example {
   border-left: 6rpx solid #8b7355;
+  background: linear-gradient(135deg, #fff 0%, #fdfbf8 100%);
 }
 
 .node-empty {
-  border: 2rpx dashed #e8dfd3;
-  background: #fdfbf8;
-  box-shadow: none;
+  border: 2rpx dashed rgba(196, 165, 116, 0.42);
+  background: linear-gradient(145deg, #fdfbf8 0%, #faf6f0 100%);
+  box-shadow: inset 0 2rpx 16rpx rgba(196, 165, 116, 0.05);
 }
 
 .node-main {
-  padding: 28rpx 28rpx 20rpx;
+  padding: 32rpx 32rpx 24rpx;
+}
+
+.node-main:active {
+  background: rgba(250, 246, 240, 0.55);
 }
 
 .node-top {
@@ -185,30 +391,50 @@
 }
 
 .node-date {
-  font-size: 24rpx;
+  display: inline-flex;
+  align-items: center;
+  font-size: 22rpx;
   color: #8b6914;
   font-weight: 600;
+  letter-spacing: 1rpx;
+  background: linear-gradient(
+    135deg,
+    rgba(196, 165, 116, 0.2) 0%,
+    rgba(196, 165, 116, 0.08) 100%
+  );
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid rgba(196, 165, 116, 0.18);
+}
+
+.node-date.placeholder {
+  background: rgba(196, 184, 168, 0.1);
+  border-color: rgba(196, 184, 168, 0.15);
 }
 
 .example-badge {
   font-size: 20rpx;
   color: #8b7355;
   background: #f0ebe3;
-  padding: 4rpx 12rpx;
-  border-radius: 8rpx;
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid rgba(139, 115, 85, 0.12);
+  letter-spacing: 1rpx;
 }
 
 .node-title {
   font-size: 32rpx;
   font-weight: 600;
   color: #3d2b1f;
-  margin-bottom: 10rpx;
+  margin-bottom: 12rpx;
+  line-height: 1.45;
+  letter-spacing: 0.5rpx;
 }
 
 .node-desc {
   font-size: 26rpx;
   color: #8b7355;
-  line-height: 1.6;
+  line-height: 1.65;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
@@ -222,10 +448,12 @@
 
 .node-delete {
   text-align: center;
-  padding: 16rpx;
+  padding: 18rpx;
   font-size: 24rpx;
   color: #a89580;
   border-top: 1rpx solid #f0ebe3;
+  background: linear-gradient(180deg, #fff 0%, #fdfbf8 100%);
+  letter-spacing: 1rpx;
 }
 
 .node-delete:active {
@@ -242,14 +470,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #fff;
+  background: linear-gradient(135deg, #fff 0%, #fdfbf8 100%);
   color: #8b6914;
   font-size: 28rpx;
   font-weight: 600;
-  border: 2rpx dashed #c4a574;
+  border: 2rpx dashed rgba(196, 165, 116, 0.55);
   border-radius: 44rpx;
-  padding: 20rpx 48rpx;
+  padding: 22rpx 52rpx;
   line-height: 1.4;
+  box-shadow: 0 4rpx 16rpx rgba(196, 165, 116, 0.1);
 }
 
 .btn-add::after {
@@ -266,9 +495,10 @@
 .style-section {
   margin-top: 48rpx;
   background: #fff;
-  border-radius: 20rpx;
+  border-radius: 24rpx;
   padding: 0 28rpx;
   box-shadow: 0 4rpx 16rpx rgba(61, 43, 31, 0.06);
+  border: 1rpx solid rgba(232, 223, 211, 0.75);
 }
 
 .style-header {
@@ -349,9 +579,11 @@
   bottom: 0;
   left: 0;
   right: 0;
+  z-index: 10;
   padding: 24rpx 40rpx calc(24rpx + env(safe-area-inset-bottom));
   background: #faf6f0;
-  border-top: 1rpx solid #e8dfd3;
+  border-top: 1rpx solid rgba(232, 223, 211, 0.8);
+  box-shadow: 0 -8rpx 32rpx rgba(61, 43, 31, 0.06);
 }
 
 .btn {

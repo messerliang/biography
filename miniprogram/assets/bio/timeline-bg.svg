@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 1600" fill="none">
+  <defs>
+    <linearGradient id="river" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#d4b88a" stop-opacity="0.28"/>
+      <stop offset="45%" stop-color="#c4a574" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#e8dfd3" stop-opacity="0.04"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f5ead5" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#c4a574" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <path d="M640 0 C560 260 720 480 600 760 S520 1180 580 1600" stroke="url(#river)" stroke-width="140" stroke-linecap="round"/>
+  <path d="M610 60 C550 300 670 520 590 780 S540 1160 560 1540" stroke="url(#shine)" stroke-width="28" stroke-linecap="round" opacity="0.55"/>
+  <g stroke="#c4a574" stroke-width="2" opacity="0.16">
+    <circle cx="500" cy="240" r="12" fill="none"/>
+    <line x1="500" y1="222" x2="500" y2="258"/>
+    <line x1="482" y1="240" x2="518" y2="240"/>
+    <circle cx="500" cy="240" r="3.5" fill="#c4a574" stroke="none"/>
+    <circle cx="660" cy="520" r="10" fill="none"/>
+    <line x1="660" y1="505" x2="660" y2="535"/>
+    <line x1="645" y1="520" x2="675" y2="520"/>
+    <circle cx="660" cy="520" r="3" fill="#c4a574" stroke="none"/>
+    <circle cx="540" cy="860" r="9" fill="none"/>
+    <line x1="540" y1="847" x2="540" y2="873"/>
+    <line x1="527" y1="860" x2="553" y2="860"/>
+    <circle cx="540" cy="860" r="2.5" fill="#c4a574" stroke="none"/>
+    <circle cx="620" cy="1180" r="8" fill="none"/>
+    <line x1="620" y1="1168" x2="620" y2="1192"/>
+    <line x1="608" y1="1180" x2="632" y2="1180"/>
+    <circle cx="620" cy="1180" r="2" fill="#c4a574" stroke="none"/>
+  </g>
+</svg>
