@@ -124,6 +124,7 @@
   font-weight: 600;
   color: #8b7355;
   padding: 12rpx 8rpx 8rpx;
+  text-align: center;
 }
 
 .style-option {

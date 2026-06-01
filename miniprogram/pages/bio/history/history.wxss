@@ -138,11 +138,20 @@
   flex: 1;
   min-width: calc(50% - 12rpx);
   height: 80rpx;
-  line-height: 80rpx;
+  padding: 0;
   border-radius: 40rpx;
   font-size: 28rpx;
   background: #f5efe6;
   color: #8b6914;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
+  box-sizing: border-box;
+}
+
+.modal-btn::after {
   border: none;
 }
 
