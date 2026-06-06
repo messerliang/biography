@@ -2,7 +2,7 @@
   <view class="header">
     <view class="title">{{title}}</view>
     <view class="status" wx:if="{{generating}}">
-      <text class="dot">●</text> 正在撰写中……
+      <text class="dot">●</text> {{statusText || '正在撰写中……'}}
     </view>
     <view class="status done" wx:elif="{{saved}}">已保存至我的传记</view>
     <view class="status done" wx:elif="{{!generating && content && !generateFailed}}">撰写完成，请保存</view>

@@ -1,7 +1,9 @@
 const {
   getStyleGroupsForUI,
   getStyleLabel,
-  normalizeWritingStyle,
+  getLengthOptionsForUI,
+  getLengthLabel,
+  normalizeLength,
   getTimelineDraft,
   saveTimelineDraft,
   getDefaultTimelineDraft,
@@ -25,8 +27,12 @@ Page({
     totalCount: 0,
     selectedStyle: "narrative",
     styleLabel: getStyleLabel("narrative"),
+    selectedLength: "normal",
+    lengthLabel: getLengthLabel("normal"),
     styleGroups: getStyleGroupsForUI(),
+    lengthOptions: getLengthOptionsForUI(),
     showStylePicker: false,
+    showLengthPicker: false,
     sortMode: false,
     manualSort: false,
   },
@@ -44,6 +50,7 @@ Page({
     const stored = getTimelineDraft();
     const draft = resolveTimelineDraft(stored);
     const style = draft.selectedStyle || "narrative";
+    const length = normalizeLength(draft.selectedLength);
     const manualSort = !!draft.manualSort;
     const nodes = draft.nodes;
     const sortedNodes = this.buildDisplayNodes(nodes, manualSort);
@@ -54,13 +61,15 @@ Page({
       sortedNodes,
       selectedStyle: style,
       styleLabel: getStyleLabel(style),
+      selectedLength: length,
+      lengthLabel: getLengthLabel(length),
       manualSort,
       filledCount: countFilledNodes(nodes),
       totalCount: nodes.length,
     });
 
     if (!silent || restoredDefault) {
-      saveTimelineDraft({ nodes, selectedStyle: style, manualSort });
+      saveTimelineDraft({ nodes, selectedStyle: style, selectedLength: length, manualSort });
     }
   },
 
@@ -86,6 +95,7 @@ Page({
     saveTimelineDraft({
       nodes: this.data.nodes,
       selectedStyle: this.data.selectedStyle,
+      selectedLength: this.data.selectedLength,
       manualSort: this.data.manualSort,
     });
     const sortedNodes = this.buildDisplayNodes(this.data.nodes, this.data.manualSort);
@@ -94,6 +104,7 @@ Page({
       filledCount: countFilledNodes(this.data.nodes),
       totalCount: this.data.nodes.length,
       styleLabel: getStyleLabel(this.data.selectedStyle),
+      lengthLabel: getLengthLabel(this.data.selectedLength),
     });
   },
 
@@ -151,6 +162,23 @@ Page({
     this.persistDraft();
   },
 
+  toggleLengthPicker() {
+    this.setData({ showLengthPicker: !this.data.showLengthPicker });
+  },
+
+  toggleStylePicker() {
+    this.setData({ showStylePicker: !this.data.showStylePicker });
+  },
+
+  selectLength(e) {
+    const length = normalizeLength(e.currentTarget.dataset.length);
+    this.setData({
+      selectedLength: length,
+      lengthLabel: getLengthLabel(length),
+    });
+    this.persistDraft();
+  },
+
   selectStyle(e) {
     const style = e.currentTarget.dataset.style;
     this.setData({
@@ -158,10 +186,6 @@ Page({
       styleLabel: getStyleLabel(style),
     });
     this.persistDraft();
-  },
-
-  toggleStylePicker() {
-    this.setData({ showStylePicker: !this.data.showStylePicker });
   },
 
   resetExamples() {
@@ -196,7 +220,8 @@ Page({
       navigateToGenerate({
         source: "timeline",
         style: this.data.selectedStyle,
-        data: { nodes: nodesToSend },
+        length: this.data.selectedLength,
+        data: { nodes: nodesToSend, manualSort: this.data.manualSort },
       });
     };
 

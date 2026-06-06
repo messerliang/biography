@@ -83,8 +83,9 @@
   border-top: 1rpx solid #e8dfd3;
 }
 
+.length-section,
 .style-section {
-  margin-bottom: 16rpx;
+  margin-bottom: 12rpx;
 }
 
 .style-header {

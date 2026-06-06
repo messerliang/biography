@@ -1,4 +1,9 @@
-const { getStyleGroupsForUI, navigateToGenerate } = require("../../../utils/bio");
+const {
+  getStyleGroupsForUI,
+  getLengthOptionsForUI,
+  normalizeLength,
+  navigateToGenerate,
+} = require("../../../utils/bio");
 const { chooseVideo, chooseAudio, parseVideo, parseAudio } = require("../../../utils/videoParser");
 
 function formatDuration(seconds) {
@@ -28,7 +33,9 @@ Page({
     statusTip: "正在上传到云端",
     transcript: "",
     selectedStyle: "narrative",
+    selectedLength: "normal",
     styleGroups: getStyleGroupsForUI(),
+    lengthOptions: getLengthOptionsForUI(),
   },
 
   switchMode(e) {
@@ -88,6 +95,10 @@ Page({
 
   selectStyle(e) {
     this.setData({ selectedStyle: e.currentTarget.dataset.style });
+  },
+
+  selectLength(e) {
+    this.setData({ selectedLength: normalizeLength(e.currentTarget.dataset.length) });
   },
 
   resetMedia() {
@@ -165,6 +176,7 @@ Page({
     navigateToGenerate({
       source: isAudio ? "audio" : "video",
       style: this.data.selectedStyle,
+      length: this.data.selectedLength,
       data: { text },
     });
   },

@@ -492,6 +492,7 @@
   text-decoration: underline;
 }
 
+.length-section,
 .style-section {
   margin-top: 48rpx;
   background: #fff;
@@ -499,6 +500,10 @@
   padding: 0 28rpx;
   box-shadow: 0 4rpx 16rpx rgba(61, 43, 31, 0.06);
   border: 1rpx solid rgba(232, 223, 211, 0.75);
+}
+
+.length-section {
+  padding-bottom: 4rpx;
 }
 
 .style-header {

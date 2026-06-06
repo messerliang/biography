@@ -172,8 +172,17 @@
   box-sizing: border-box;
 }
 
+.length-section,
 .style-section {
   margin-top: 32rpx;
+}
+
+.section-label,
+.style-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #3d2b1f;
+  margin-bottom: 16rpx;
 }
 
 .style-group-title {
@@ -188,13 +197,7 @@
   margin-top: 0;
 }
 
-.style-label {
-  font-size: 28rpx;
-  font-weight: 600;
-  color: #3d2b1f;
-  margin-bottom: 16rpx;
-}
-
+.length-list,
 .style-list {
   display: flex;
   flex-direction: column;

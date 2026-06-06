@@ -45,6 +45,24 @@ const STYLE_GROUP_META = [
   { key: "special", label: "特殊风格", styles: SPECIAL_STYLES },
 ];
 
+const LENGTH_OPTIONS = {
+  short: {
+    key: "short",
+    label: "短篇",
+    desc: "约 300–500 字",
+  },
+  normal: {
+    key: "normal",
+    label: "普通",
+    desc: "约 800–1000 字",
+  },
+  adaptive: {
+    key: "adaptive",
+    label: "遵照实际填写",
+    desc: "按填写内容多少生成适当篇幅",
+  },
+};
+
 const FORM_STEPS = [
   { key: "basic", title: "基本信息", subtitle: "让我们从最基本的信息开始" },
   { key: "childhood", title: "童年与家庭", subtitle: "回忆您的成长环境与家人" },
@@ -102,7 +120,7 @@ const SYSTEM_PROMPT = `你是一位资深传记作家。请根据用户提供的
 2. 严格基于用户提供的信息，不虚构未提及的人物、事件或细节
 3. 信息不足的部分可略写，不要编造
 4. 段落清晰，适合阅读与分享
-5. 字数控制在 800-1500 字`;
+5. 严格遵守用户消息中的篇幅要求`;
 
 const INTERVIEW_SYSTEM_PROMPT = `你是一位专业的传记采访记者，正在帮助用户整理人生故事。
 
@@ -146,6 +164,93 @@ function getStyleLabel(styleKey) {
   return STYLES[styleKey]?.label || LEGACY_STYLE_LABELS[styleKey] || STYLES.narrative.label;
 }
 
+function normalizeLength(length) {
+  return LENGTH_OPTIONS[length] ? length : "normal";
+}
+
+function getLengthOptionsForUI() {
+  return Object.entries(LENGTH_OPTIONS).map(([key, val]) => ({ key, ...val }));
+}
+
+function getLengthLabel(lengthKey) {
+  const key = normalizeLength(lengthKey);
+  return LENGTH_OPTIONS[key].label;
+}
+
+function getFlatStyleOptions() {
+  const list = [];
+  STYLE_GROUP_META.forEach((group) => {
+    Object.entries(group.styles).forEach(([key, val]) => {
+      list.push({ key, label: val.label });
+    });
+  });
+  return list;
+}
+
+function getStylePickerRange() {
+  return getFlatStyleOptions().map((o) => o.label);
+}
+
+function getStylePickerIndex(styleKey) {
+  const key = normalizeWritingStyle(styleKey);
+  const idx = getFlatStyleOptions().findIndex((o) => o.key === key);
+  return idx >= 0 ? idx : 0;
+}
+
+function getStyleKeyFromPickerIndex(index) {
+  const opts = getFlatStyleOptions();
+  const i = Number(index);
+  if (!Number.isFinite(i) || i < 0 || i >= opts.length) return "narrative";
+  return opts[i].key;
+}
+
+function getLengthPickerRange() {
+  return getLengthOptionsForUI().map((o) => o.label);
+}
+
+function getLengthPickerIndex(lengthKey) {
+  const key = normalizeLength(lengthKey);
+  const idx = getLengthOptionsForUI().findIndex((o) => o.key === key);
+  return idx >= 0 ? idx : 0;
+}
+
+function getLengthKeyFromPickerIndex(index) {
+  const opts = getLengthOptionsForUI();
+  const i = Number(index);
+  if (!Number.isFinite(i) || i < 0 || i >= opts.length) return "normal";
+  return opts[i].key;
+}
+
+function getBioPickerState(styleKey, lengthKey) {
+  const style = normalizeWritingStyle(styleKey);
+  const length = normalizeLength(lengthKey);
+  return {
+    lengthPickerRange: getLengthPickerRange(),
+    lengthPickerIndex: getLengthPickerIndex(length),
+    stylePickerRange: getStylePickerRange(),
+    stylePickerIndex: getStylePickerIndex(style),
+    selectedStyle: style,
+    selectedLength: length,
+    styleLabel: getStyleLabel(style),
+    lengthLabel: getLengthLabel(length),
+  };
+}
+
+function getLengthInstruction(length) {
+  const key = normalizeLength(length);
+  if (key === "short") {
+    return "篇幅要求：全文控制在 300–500 字，精炼扼要，保留最重要的事实与情感，不要超出上限。";
+  }
+  if (key === "normal") {
+    return "篇幅要求：全文控制在 800–1000 字，结构完整、详略得当，不要明显超出该范围。";
+  }
+  return "篇幅要求：根据用户提供素材的信息量灵活把握篇幅；素材少则简明扼要（可短至数百字），素材丰富则充分展开；不人为注水或过度压缩，以如实覆盖用户内容为准。";
+}
+
+function getWritingRequirements(style, length) {
+  return `${getStyleInstruction(style)}\n\n${getLengthInstruction(length)}`;
+}
+
 function getSourceLabel(sourceKey) {
   return SOURCE_LABELS[sourceKey] || "传记";
 }
@@ -178,7 +283,7 @@ function getActiveExampleNodes(nodes) {
   return (nodes || []).filter((n) => n.isExample && isNodeFilled(n));
 }
 
-function buildPromptFromForm(form, style) {
+function buildPromptFromForm(form, style, length) {
   const sections = [
     ["姓名", form.name],
     ["出生年月", form.birthYear],
@@ -193,44 +298,44 @@ function buildPromptFromForm(form, style) {
     .map(([label, value]) => `【${label}】\n${String(value).trim()}`)
     .join("\n\n");
 
-  return `${getStyleInstruction(style)}
+  return `${getWritingRequirements(style, length)}
 
 请根据以下用户信息撰写传记：
 
 ${sections || "（用户尚未填写详细信息）"}`;
 }
 
-function buildPromptFromChat(messages, style) {
+function buildPromptFromChat(messages, style, length) {
   const dialogue = messages
     .filter((m) => m.role === "user" || m.role === "assistant")
     .map((m) => `${m.role === "user" ? "用户" : "采访者"}：${m.content}`)
     .join("\n\n");
 
-  return `${getStyleInstruction(style)}
+  return `${getWritingRequirements(style, length)}
 
 以下是通过采访收集的对话记录，请从中提取用户的人生信息，撰写一篇完整的个人传记：
 
 ${dialogue}`;
 }
 
-function buildPromptFromFree(text, style) {
-  return `${getStyleInstruction(style)}
+function buildPromptFromFree(text, style, length) {
+  return `${getWritingRequirements(style, length)}
 
 用户自由输入了以下人生回忆素材，请整理并撰写一篇结构完整的个人传记：
 
 ${text.trim()}`;
 }
 
-function buildPromptFromVideo(text, style) {
-  return `${getStyleInstruction(style)}
+function buildPromptFromVideo(text, style, length) {
+  return `${getWritingRequirements(style, length)}
 
 用户导入了一段讲述人生经历的视频，以下是从视频中识别出的语音文字内容。请整理其中的信息，撰写一篇结构完整的个人传记：
 
 ${text.trim()}`;
 }
 
-function buildPromptFromAudio(text, style) {
-  return `${getStyleInstruction(style)}
+function buildPromptFromAudio(text, style, length) {
+  return `${getWritingRequirements(style, length)}
 
 用户导入了一段讲述人生经历的音频，以下是从音频中识别出的语音文字内容。请整理其中的信息，撰写一篇结构完整的个人传记：
 
@@ -332,7 +437,7 @@ function countFilledNodes(nodes) {
   return nodes.filter(isNodeFilled).length;
 }
 
-function buildPromptFromTimeline(nodes, style) {
+function buildPromptFromTimeline(nodes, style, length) {
   const events = sortTimelineNodes(nodes)
     .filter(isNodeFilled)
     .map((node, index) => {
@@ -344,7 +449,7 @@ function buildPromptFromTimeline(nodes, style) {
     })
     .join("\n\n");
 
-  return `${getStyleInstruction(style)}
+  return `${getWritingRequirements(style, length)}
 
 用户已通过「时间轴填写」整理了以下关键事件节点。请严格按节点顺序撰写传记，每个节点对应一个阶段，将各节点自然串联成篇：
 
@@ -353,7 +458,14 @@ ${events || "（用户尚未填写事件）"}`;
 
 function isTimeoutError(err) {
   const msg = String(err?.message || err?.errMsg || err || "").toLowerCase();
-  return msg.includes("timeout") || msg.includes("timed out") || msg.includes("超时");
+  const code = String(err?.errCode || err?.code || "");
+  return (
+    code === "-504003" ||
+    msg.includes("timeout") ||
+    msg.includes("timed out") ||
+    msg.includes("超时") ||
+    msg.includes("time_limit_exceeded")
+  );
 }
 
 function saveGeneratePayload(payload) {
@@ -381,118 +493,99 @@ async function ensureCloudReady() {
   if (!wx.cloud) {
     throw new Error("请使用 2.2.3 或以上的基础库以使用云能力");
   }
-  if (typeof wx.cloud.extend?.AI?.createModel !== "function") {
-    throw new Error("当前基础库不支持 AI 能力，请升级微信版本后重试");
-  }
 }
 
-async function consumeModelStream(res, onChunk) {
-  let fullText = "";
-  let lastNotify = 0;
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
-  const notify = (chunk = "") => {
-    if (!onChunk) return;
-    const now = Date.now();
-    if (chunk === "" || now - lastNotify >= 150) {
-      onChunk(fullText, chunk);
-      lastNotify = now;
-    }
-  };
-
-  if (res.textStream) {
-    for await (const str of res.textStream) {
-      fullText += str;
-      notify(str);
-    }
-    notify("");
-    return fullText;
+async function playTypingEffect(fullText, onChunk) {
+  if (!onChunk || !fullText) return fullText;
+  const step = Math.max(4, Math.floor(fullText.length / 120));
+  for (let i = step; i < fullText.length; i += step) {
+    onChunk(fullText.slice(0, i), fullText.slice(i - step, i));
+    await sleep(28);
   }
-
-  for await (const event of res.eventStream) {
-    const { data: eventData } = event;
-    if (eventData === "[DONE]") break;
-    try {
-      const dataJson = JSON.parse(eventData);
-      const { choices = [] } = dataJson || {};
-      const { delta, finish_reason } = choices[0] || {};
-      if (finish_reason === "stop") break;
-      const chunk = delta?.content || "";
-      if (chunk) {
-        fullText += chunk;
-        notify(chunk);
-      }
-    } catch (e) {
-      break;
-    }
-  }
-  notify("");
+  onChunk(fullText, "");
   return fullText;
 }
 
-async function streamBiography({ source, data, style = "narrative", onChunk, retryCount = 1 }) {
-  let userPrompt = "";
-  if (source === "form") {
-    userPrompt = buildPromptFromForm(data, style);
-  } else if (source === "chat") {
-    userPrompt = buildPromptFromChat(data.messages, style);
-  } else if (source === "free") {
-    userPrompt = buildPromptFromFree(data.text, style);
-  } else if (source === "video") {
-    userPrompt = buildPromptFromVideo(data.text, style);
-  } else if (source === "audio") {
-    userPrompt = buildPromptFromAudio(data.text, style);
-  } else if (source === "timeline") {
-    userPrompt = buildPromptFromTimeline(data.nodes, style);
-  } else {
-    throw new Error("未知的传记来源");
-  }
-
+async function callCloudFunction(name, data, options = {}, retryCount = 1) {
+  const { timeout = 60000 } = options;
   await ensureCloudReady();
-
   try {
-    const ai = wx.cloud.extend.AI;
-    const aiModel = ai.createModel(MODEL_CONFIG.modelProvider);
-    const res = await aiModel.streamText({
-      timeout: AI_STREAM_TIMEOUT,
-      data: {
-        model: MODEL_CONFIG.quickResponseModel,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: userPrompt },
-        ],
-      },
-    });
-
-    return await consumeModelStream(res, onChunk);
+    const res = await wx.cloud.callFunction({ name, data, timeout });
+    return res?.result || {};
   } catch (err) {
     if (retryCount > 0 && isTimeoutError(err)) {
-      if (onChunk) onChunk("", "");
-      return streamBiography({ source, data, style, onChunk, retryCount: retryCount - 1 });
+      return callCloudFunction(name, data, options, retryCount - 1);
+    }
+    throw err;
+  }
+}
+
+async function streamBiography({
+  source,
+  data,
+  style = "narrative",
+  length = "normal",
+  onChunk,
+  onStatus,
+  retryCount = 1,
+}) {
+  const normalizedLength = normalizeLength(length);
+  if (onStatus) onStatus("正在安全校验素材…");
+  if (onChunk) onChunk("");
+
+  try {
+    if (onStatus) onStatus("正在云端撰写传记…");
+    const result = await callCloudFunction(
+      "generateBiography",
+      {
+        source,
+        data,
+        style: normalizeWritingStyle(style),
+        length: normalizedLength,
+      },
+      { timeout: 60000 }
+    );
+
+    if (!result.success) {
+      throw new Error(result.message || "传记生成失败");
+    }
+
+    if (onStatus) {
+      onStatus(result.meta?.truncated ? "素材已精简，撰写完成" : "撰写完成");
+    }
+
+    return await playTypingEffect(result.content || "", onChunk);
+  } catch (err) {
+    if (retryCount > 0 && isTimeoutError(err)) {
+      if (onChunk) onChunk("");
+      return streamBiography({
+        source,
+        data,
+        style,
+        length: normalizedLength,
+        onChunk,
+        onStatus,
+        retryCount: retryCount - 1,
+      });
     }
     throw err;
   }
 }
 
 async function streamChatReply(messages, onChunk, retryCount = 1) {
-  await ensureCloudReady();
-  try {
-    const ai = wx.cloud.extend.AI;
-    const aiModel = ai.createModel(MODEL_CONFIG.modelProvider);
-    const res = await aiModel.streamText({
-      timeout: AI_STREAM_TIMEOUT,
-      data: {
-        model: MODEL_CONFIG.quickResponseModel,
-        messages: [{ role: "system", content: INTERVIEW_SYSTEM_PROMPT }, ...messages],
-      },
-    });
-
-    return consumeModelStream(res, onChunk);
-  } catch (err) {
-    if (retryCount > 0 && isTimeoutError(err)) {
-      return streamChatReply(messages, onChunk, retryCount - 1);
-    }
-    throw err;
+  const result = await callCloudFunction("chatInterview", { messages }, { timeout: 60000 });
+  if (!result.success) {
+    throw new Error(result.message || "访谈回复失败");
   }
+  const fullText = result.content || "";
+  if (onChunk) {
+    onChunk(fullText, fullText);
+  }
+  return fullText;
 }
 
 function getBiographyList() {
@@ -510,6 +603,7 @@ function saveBiography(record) {
     title: record.title || "我的人生传记",
     content: record.content,
     style: record.style || "narrative",
+    length: normalizeLength(record.length),
     source: record.source || "form",
     createdAt: record.createdAt || new Date().toISOString(),
   };
@@ -582,6 +676,7 @@ function getDefaultChatDraft() {
   return {
     messages: [{ role: "assistant", content: WELCOME_MESSAGE }],
     selectedStyle: "narrative",
+    selectedLength: "normal",
   };
 }
 
@@ -600,6 +695,7 @@ function getDefaultTimelineDraft() {
   return {
     nodes: ensureNodeSortOrder(getDefaultTimelineNodes()),
     selectedStyle: "narrative",
+    selectedLength: "normal",
     manualSort: false,
   };
 }
@@ -623,6 +719,7 @@ function resolveTimelineDraft(stored) {
   return {
     nodes: ensureNodeSortOrder(stored.nodes),
     selectedStyle: normalizeWritingStyle(stored.selectedStyle),
+    selectedLength: normalizeLength(stored.selectedLength),
     manualSort: !!stored.manualSort,
   };
 }
@@ -644,8 +741,19 @@ module.exports = {
   MODEL_CONFIG,
   STYLES,
   STYLE_GROUP_META,
+  LENGTH_OPTIONS,
   getStyleGroupsForUI,
   getStyleLabel,
+  getLengthOptionsForUI,
+  getLengthLabel,
+  getLengthPickerRange,
+  getLengthPickerIndex,
+  getLengthKeyFromPickerIndex,
+  getStylePickerRange,
+  getStylePickerIndex,
+  getStyleKeyFromPickerIndex,
+  getBioPickerState,
+  normalizeLength,
   normalizeWritingStyle,
   getSourceLabel,
   getSampleBiographies,

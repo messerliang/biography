@@ -1,6 +1,9 @@
 const {
   getStyleGroupsForUI,
   getStyleLabel,
+  getLengthOptionsForUI,
+  getLengthLabel,
+  normalizeLength,
   getChatMaterialStats,
   streamChatReply,
   navigateToGenerate,
@@ -21,8 +24,12 @@ Page({
     scrollTo: "",
     selectedStyle: "narrative",
     styleLabel: getStyleLabel("narrative"),
+    selectedLength: "normal",
+    lengthLabel: getLengthLabel("normal"),
     styleGroups: getStyleGroupsForUI(),
+    lengthOptions: getLengthOptionsForUI(),
     showStylePicker: false,
+    showLengthPicker: false,
     materialTip: "",
     materialSufficient: false,
     userMsgCount: 0,
@@ -59,10 +66,14 @@ Page({
   },
 
   applyDraft(draft) {
+    const style = draft.selectedStyle || "narrative";
+    const length = normalizeLength(draft.selectedLength);
     this.setData({
       messages: draft.messages,
-      selectedStyle: draft.selectedStyle || "narrative",
-      styleLabel: getStyleLabel(draft.selectedStyle || "narrative"),
+      selectedStyle: style,
+      styleLabel: getStyleLabel(style),
+      selectedLength: length,
+      lengthLabel: getLengthLabel(length),
     });
     this.updateMaterialStats();
   },
@@ -72,6 +83,7 @@ Page({
     saveChatDraft({
       messages: this.data.messages,
       selectedStyle: this.data.selectedStyle,
+      selectedLength: this.data.selectedLength,
     });
   },
 
@@ -88,8 +100,22 @@ Page({
     this.setData({ inputValue: e.detail.value });
   },
 
+  toggleLengthPicker() {
+    this.setData({ showLengthPicker: !this.data.showLengthPicker });
+  },
+
   toggleStylePicker() {
     this.setData({ showStylePicker: !this.data.showStylePicker });
+  },
+
+  selectLength(e) {
+    const length = normalizeLength(e.currentTarget.dataset.length);
+    this.setData({
+      selectedLength: length,
+      lengthLabel: getLengthLabel(length),
+      showLengthPicker: false,
+    });
+    this.saveDraft();
   },
 
   selectStyle(e) {
@@ -212,6 +238,7 @@ Page({
       navigateToGenerate({
         source: "chat",
         style: this.data.selectedStyle,
+        length: this.data.selectedLength,
         data: { messages: chatMessages },
       });
     };

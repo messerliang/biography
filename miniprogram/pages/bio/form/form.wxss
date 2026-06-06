@@ -76,7 +76,16 @@
   line-height: 1.6;
 }
 
+.length-section,
 .style-section {
+  margin-top: 16rpx;
+}
+
+.length-list,
+.style-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
   margin-top: 16rpx;
 }
 
@@ -89,13 +98,6 @@
 }
 
 .style-group-title:first-of-type {
-  margin-top: 16rpx;
-}
-
-.style-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16rpx;
   margin-top: 16rpx;
 }
 

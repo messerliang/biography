@@ -1,6 +1,8 @@
 const {
   FORM_STEPS,
   getStyleGroupsForUI,
+  getLengthOptionsForUI,
+  normalizeLength,
   getDefaultForm,
   getFormDraft,
   saveFormDraft,
@@ -16,7 +18,9 @@ Page({
     progressPercent: 20,
     form: getDefaultForm(),
     selectedStyle: "narrative",
+    selectedLength: "normal",
     styleGroups: getStyleGroupsForUI(),
+    lengthOptions: getLengthOptionsForUI(),
   },
 
   onLoad() {
@@ -31,6 +35,7 @@ Page({
               form: draft.form,
               currentStep: draft.currentStep || 0,
               selectedStyle: draft.selectedStyle || "narrative",
+              selectedLength: normalizeLength(draft.selectedLength),
               progressPercent: ((draft.currentStep || 0) + 1) / FORM_STEPS.length * 100,
             });
           }
@@ -50,11 +55,17 @@ Page({
     this.saveDraft();
   },
 
+  selectLength(e) {
+    this.setData({ selectedLength: normalizeLength(e.currentTarget.dataset.length) });
+    this.saveDraft();
+  },
+
   saveDraft() {
     saveFormDraft({
       form: this.data.form,
       currentStep: this.data.currentStep,
       selectedStyle: this.data.selectedStyle,
+      selectedLength: this.data.selectedLength,
     });
   },
 
@@ -92,6 +103,7 @@ Page({
     navigateToGenerate({
       source: "form",
       style: this.data.selectedStyle,
+      length: this.data.selectedLength,
       data: form,
     });
   },

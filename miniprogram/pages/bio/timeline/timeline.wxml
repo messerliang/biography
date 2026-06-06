@@ -1,7 +1,7 @@
 <view class="page-wrap">
-  <view class="page-bg">
-    <image class="page-bg-image" src="/assets/bio/timeline-bg.svg" mode="widthFix"/>
+  <view class="page-bg" aria-hidden="true">
     <view class="page-bg-river"></view>
+    <image class="page-bg-image" src="/assets/bio/timeline-bg.svg" mode="aspectFill"/>
     <view class="page-bg-fade"></view>
     <view class="bg-marker bg-marker-1"></view>
     <view class="bg-marker bg-marker-2"></view>
@@ -65,13 +65,33 @@
     <view class="reset-link" bindtap="resetExamples">恢复示例节点</view>
   </view>
 
+  <view class="length-section">
+    <view class="style-header" bindtap="toggleLengthPicker">
+      <text class="style-label">传记篇幅</text>
+      <text class="style-current">{{lengthLabel}}</text>
+      <text class="style-arrow">{{showLengthPicker ? '▲' : '▼'}}</text>
+    </view>
+    <view class="style-list" wx:if="{{showLengthPicker}}">
+      <view
+        class="style-item {{selectedLength === item.key ? 'active' : ''}}"
+        wx:for="{{lengthOptions}}"
+        wx:key="key"
+        bindtap="selectLength"
+        data-length="{{item.key}}"
+      >
+        <view class="style-item-label">{{item.label}}</view>
+        <view class="style-item-desc">{{item.desc}}</view>
+      </view>
+    </view>
+  </view>
+
   <view class="style-section">
     <view class="style-header" bindtap="toggleStylePicker">
       <text class="style-label">传记风格</text>
       <text class="style-current">{{styleLabel}}</text>
       <text class="style-arrow">{{showStylePicker ? '▲' : '▼'}}</text>
     </view>
-    <view class="style-note">内容将按节点顺序成篇，此处选择文笔风格即可</view>
+    <view class="style-note">内容将按节点顺序成篇，此处选择篇幅与文笔风格</view>
     <view class="style-list" wx:if="{{showStylePicker}}">
       <block wx:for="{{styleGroups}}" wx:key="key">
         <view class="style-group-title">{{item.label}}</view>

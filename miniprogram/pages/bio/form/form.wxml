@@ -100,6 +100,22 @@
       />
     </view>
 
+    <view class="length-section">
+      <view class="label">传记篇幅</view>
+      <view class="length-list">
+        <view
+          wx:for="{{lengthOptions}}"
+          wx:key="key"
+          class="style-item {{selectedLength === item.key ? 'active' : ''}}"
+          data-length="{{item.key}}"
+          bindtap="selectLength"
+        >
+          <view class="style-label">{{item.label}}</view>
+          <view class="style-desc">{{item.desc}}</view>
+        </view>
+      </view>
+    </view>
+
     <view class="style-section">
       <view class="label">选择写作风格</view>
       <block wx:for="{{styleGroups}}" wx:key="key">

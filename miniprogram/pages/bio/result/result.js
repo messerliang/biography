@@ -5,6 +5,8 @@ const {
   getGeneratePayload,
   clearGeneratePayload,
   getStyleLabel,
+  getLengthLabel,
+  normalizeLength,
   getSourceLabel,
 } = require("../../../utils/bio");
 const { exportAndSaveBiography } = require("../../../utils/exportBiography");
@@ -16,11 +18,14 @@ Page({
     generating: true,
     generateFailed: false,
     errorMessage: "",
+    statusText: "",
     saved: false,
     exporting: false,
     source: "form",
     style: "narrative",
+    length: "normal",
     styleLabel: "",
+    lengthLabel: "",
     sourceLabel: "",
     rawData: null,
   },
@@ -52,6 +57,7 @@ Page({
 
     try {
       const style = params.style || "narrative";
+      const length = normalizeLength(params.length);
       const title =
         params.source === "form" && params.data?.name
           ? `${params.data.name}的人生传记`
@@ -68,12 +74,15 @@ Page({
         title,
         source: params.source,
         style,
+        length,
         styleLabel: getStyleLabel(style),
+        lengthLabel: getLengthLabel(length),
         sourceLabel: getSourceLabel(params.source),
         rawData: params.data,
         generating: true,
         generateFailed: false,
         errorMessage: "",
+        statusText: "",
         saved: false,
         content: "",
       });
@@ -110,26 +119,33 @@ Page({
         source: params.source,
         data: params.data,
         style: params.style || "narrative",
+        length: params.length || "normal",
+        onStatus: (statusText) => {
+          this.setData({ statusText });
+        },
         onChunk: (fullText) => {
           this.setData({ content: fullText });
         },
       });
-      this.setData({ generating: false, generateFailed: false, errorMessage: "" });
+      this.setData({ generating: false, generateFailed: false, errorMessage: "", statusText: "" });
       this.enableLeaveConfirm();
     } catch (err) {
       console.error(err);
-      const isTimeout = String(err?.message || err?.errMsg || err || "")
-        .toLowerCase()
-        .includes("timeout");
+      const errText = String(err?.message || err?.errMsg || err || "").toLowerCase();
+      const isTimeout =
+        err?.errCode === -504003 ||
+        errText.includes("timeout") ||
+        errText.includes("timed out") ||
+        errText.includes("time_limit_exceeded");
       this.setData({
         generating: false,
         generateFailed: true,
         errorMessage: isTimeout
-          ? "生成超时，可能是网络较慢或内容较多。您可以重试，或稍后再试。"
-          : "生成失败，请检查云开发 AI 配置与网络后重试。",
+          ? "生成超时（云函数上限 60 秒）。请稍后重试或精简素材。"
+          : "生成失败，请确认云函数已部署且环境变量已配置。",
         content:
           this.data.content ||
-          (isTimeout ? "生成超时，请点击下方按钮重试。" : "生成失败，请检查云开发 AI 配置后重试。"),
+          (isTimeout ? "生成超时，请点击下方按钮重试。" : "生成失败，请检查云函数部署与网络后重试。"),
       });
       wx.showToast({ title: isTimeout ? "生成超时" : "生成失败", icon: "none" });
     }
@@ -184,6 +200,7 @@ Page({
       title: this.data.title,
       content: this.data.content,
       style: this.data.style,
+      length: this.data.length,
       source: this.data.source,
     });
 

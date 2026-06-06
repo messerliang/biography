@@ -3,6 +3,7 @@ const {
   saveTimelineDraft,
   getDefaultTimelineDraft,
   normalizeWritingStyle,
+  normalizeLength,
 } = require("../../../utils/bio");
 
 Page({
@@ -118,6 +119,7 @@ Page({
     saveTimelineDraft({
       nodes,
       selectedStyle: normalizeWritingStyle(draft.selectedStyle || "narrative"),
+      selectedLength: normalizeLength(draft.selectedLength),
       manualSort: draft.manualSort,
     });
 
@@ -143,6 +145,7 @@ Page({
         saveTimelineDraft({
           nodes,
           selectedStyle: normalizeWritingStyle(draft.selectedStyle || "narrative"),
+          selectedLength: normalizeLength(draft.selectedLength),
           manualSort: draft.manualSort,
         });
         this.disableLeaveConfirm();

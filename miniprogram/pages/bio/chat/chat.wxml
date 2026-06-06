@@ -35,6 +35,26 @@
   </scroll-view>
 
   <view class="chat-footer">
+    <view class="length-section">
+      <view class="style-header" bindtap="toggleLengthPicker">
+        <text class="style-label">传记篇幅</text>
+        <text class="style-value">{{lengthLabel}}</text>
+        <text class="style-arrow">{{showLengthPicker ? '▲' : '▼'}}</text>
+      </view>
+      <view class="style-panel" wx:if="{{showLengthPicker}}">
+        <view
+          class="style-option {{selectedLength === item.key ? 'active' : ''}}"
+          wx:for="{{lengthOptions}}"
+          wx:key="key"
+          bindtap="selectLength"
+          data-length="{{item.key}}"
+        >
+          <view class="style-option-name">{{item.label}}</view>
+          <view class="style-option-desc">{{item.desc}}</view>
+        </view>
+      </view>
+    </view>
+
     <view class="style-section">
       <view class="style-header" bindtap="toggleStylePicker">
         <text class="style-label">传记风格</text>
