@@ -10,7 +10,28 @@
   <view class="page">
   <view class="header">
     <view class="header-title">梳理人生关键节点</view>
-    <view class="header-desc">点击节点填写时间、事件与详情，按时间线串联您的人生故事</view>
+    <view class="header-desc">
+      <view class="header-desc-line">点击节点填写时间、事件与详情</view>
+      <view class="header-desc-line">按时间线串联您的人生故事</view>
+    </view>
+    <view class="subject-section">
+      <view class="subject-shine" aria-hidden="true"></view>
+      <view class="subject-inner">
+        <view class="subject-label-row">
+          <view class="subject-mark" aria-hidden="true"></view>
+          <view class="subject-badge">主人公</view>
+        </view>
+        <view class="subject-field">
+          <input
+            class="subject-input"
+            placeholder="如：张明、外婆、李老师……"
+            value="{{subjectName}}"
+            bindinput="onSubjectNameInput"
+            maxlength="20"
+          />
+        </view>
+      </view>
+    </view>
     <view class="header-stats-row">
       <view class="header-stats">
         <text class="stats-filled">已填写 {{filledCount}}</text>
@@ -65,55 +86,10 @@
     <view class="reset-link" bindtap="resetExamples">恢复示例节点</view>
   </view>
 
-  <view class="length-section">
-    <view class="style-header" bindtap="toggleLengthPicker">
-      <text class="style-label">传记篇幅</text>
-      <text class="style-current">{{lengthLabel}}</text>
-      <text class="style-arrow">{{showLengthPicker ? '▲' : '▼'}}</text>
-    </view>
-    <view class="style-list" wx:if="{{showLengthPicker}}">
-      <view
-        class="style-item {{selectedLength === item.key ? 'active' : ''}}"
-        wx:for="{{lengthOptions}}"
-        wx:key="key"
-        bindtap="selectLength"
-        data-length="{{item.key}}"
-      >
-        <view class="style-item-label">{{item.label}}</view>
-        <view class="style-item-desc">{{item.desc}}</view>
-      </view>
-    </view>
-  </view>
-
-  <view class="style-section">
-    <view class="style-header" bindtap="toggleStylePicker">
-      <text class="style-label">传记风格</text>
-      <text class="style-current">{{styleLabel}}</text>
-      <text class="style-arrow">{{showStylePicker ? '▲' : '▼'}}</text>
-    </view>
-    <view class="style-note">内容将按节点顺序成篇，此处选择篇幅与文笔风格</view>
-    <view class="style-list" wx:if="{{showStylePicker}}">
-      <block wx:for="{{styleGroups}}" wx:key="key">
-        <view class="style-group-title">{{item.label}}</view>
-        <view
-          class="style-item {{selectedStyle === styleItem.key ? 'active' : ''}}"
-          wx:for="{{item.styles}}"
-          wx:for-item="styleItem"
-          wx:key="key"
-          bindtap="selectStyle"
-          data-style="{{styleItem.key}}"
-        >
-          <view class="style-item-label">{{styleItem.label}}</view>
-          <view class="style-item-desc">{{styleItem.desc}}</view>
-        </view>
-      </block>
-    </view>
-  </view>
-
   <view class="footer-spacer"></view>
   </view>
 
   <view class="footer">
-    <button class="btn btn-primary" bindtap="generate">生成传记</button>
+    <button class="btn btn-primary" bindtap="goNextStep">下一步</button>
   </view>
 </view>

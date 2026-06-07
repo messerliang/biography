@@ -99,47 +99,11 @@
         auto-height
       />
     </view>
-
-    <view class="length-section">
-      <view class="label">传记篇幅</view>
-      <view class="length-list">
-        <view
-          wx:for="{{lengthOptions}}"
-          wx:key="key"
-          class="style-item {{selectedLength === item.key ? 'active' : ''}}"
-          data-length="{{item.key}}"
-          bindtap="selectLength"
-        >
-          <view class="style-label">{{item.label}}</view>
-          <view class="style-desc">{{item.desc}}</view>
-        </view>
-      </view>
-    </view>
-
-    <view class="style-section">
-      <view class="label">选择写作风格</view>
-      <block wx:for="{{styleGroups}}" wx:key="key">
-        <view class="style-group-title">{{item.label}}</view>
-        <view class="style-list">
-          <view
-            wx:for="{{item.styles}}"
-            wx:for-item="styleItem"
-            wx:key="key"
-            class="style-item {{selectedStyle === styleItem.key ? 'active' : ''}}"
-            data-style="{{styleItem.key}}"
-            bindtap="selectStyle"
-          >
-            <view class="style-label">{{styleItem.label}}</view>
-            <view class="style-desc">{{styleItem.desc}}</view>
-          </view>
-        </view>
-      </block>
-    </view>
   </view>
 
   <view class="footer">
     <button class="btn btn-secondary" wx:if="{{currentStep > 0}}" bindtap="prevStep">上一步</button>
     <button class="btn btn-primary" wx:if="{{currentStep < totalSteps - 1}}" bindtap="nextStep">下一步</button>
-    <button class="btn btn-primary" wx:if="{{currentStep === totalSteps - 1}}" bindtap="generate">生成传记</button>
+    <button class="btn btn-primary" wx:if="{{currentStep === totalSteps - 1}}" bindtap="goToOptions">下一步</button>
   </view>
 </view>

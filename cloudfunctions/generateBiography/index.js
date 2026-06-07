@@ -10,6 +10,7 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 
 const VALID_STYLES = ["narrative", "literary", "wuxia", "classical", "qiongyao"];
 const VALID_LENGTHS = ["short", "normal", "adaptive"];
+const VALID_PERSONS = ["first", "third"];
 
 exports.main = async (event) => {
   const wxContext = cloud.getWXContext();
@@ -28,6 +29,7 @@ exports.main = async (event) => {
   const data = event?.data;
   const style = VALID_STYLES.includes(event?.style) ? event.style : "narrative";
   const length = VALID_LENGTHS.includes(event?.length) ? event.length : "normal";
+  const person = VALID_PERSONS.includes(event?.person) ? event.person : "third";
 
   const validation = validatePayload(source, data);
   if (!validation.ok) {
@@ -52,6 +54,7 @@ exports.main = async (event) => {
             material: prepared.text,
             style,
             length,
+            person,
             truncated: prepared.truncated,
           }),
         },
@@ -79,6 +82,7 @@ exports.main = async (event) => {
         source,
         style,
         length,
+        person,
         truncated: prepared.truncated,
         charCount: outputCheck.text.length,
       },

@@ -47,6 +47,7 @@ function buildMaterialFromChat(messages) {
 }
 
 function buildMaterialFromTimeline(data) {
+  const subjectName = String(data?.subjectName || "").trim();
   const nodes = sortTimelineNodes(data?.nodes || [], !!data?.manualSort);
   const events = nodes
     .filter(isNodeFilled)
@@ -58,7 +59,8 @@ function buildMaterialFromTimeline(data) {
       return parts.join("\n");
     })
     .join("\n\n");
-  return events || "（用户尚未填写事件）";
+  const body = events || "（用户尚未填写事件）";
+  return subjectName ? `【主人公】${subjectName}\n\n${body}` : body;
 }
 
 function buildMaterialFromTranscript(text) {

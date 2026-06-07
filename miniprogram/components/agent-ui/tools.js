@@ -1,17 +1,11 @@
+import { isWxWorkClient } from "../../utils/systemInfo";
+
 export const checkConfig = (chatMode, agentConfig, modelConfig) => {
   const { botId } = agentConfig || {};
   const { modelProvider, quickResponseModel, deepReasoningModel } = modelConfig || {};
-  // 检测不在微信环境，提示用户
   const appBaseInfo = wx.getAppBaseInfo();
-  try {
-    const systemInfo = wx.getSystemInfoSync();
-    if (systemInfo.environment === "wxwork") {
-      return [false, "请前往微信客户端扫码打开小程序"];
-    }
-  } catch (e) {
-    if (appBaseInfo.host.env === "SDK") {
-      return [false, "请前往微信客户端扫码打开小程序"];
-    }
+  if (isWxWorkClient() || appBaseInfo.host?.env === "SDK") {
+    return [false, "请前往微信客户端扫码打开小程序"];
   }
 
   // 检测AI能力，不存在提示用户

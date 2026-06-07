@@ -45,6 +45,19 @@ const STYLE_GROUP_META = [
   { key: "special", label: "特殊风格", styles: SPECIAL_STYLES },
 ];
 
+const PERSON_OPTIONS = {
+  first: {
+    key: "first",
+    label: "第一人称",
+    desc: "以「我」的视角讲述，亲切直述",
+  },
+  third: {
+    key: "third",
+    label: "第三人称",
+    desc: "以他/她称呼主人公，更具传记感",
+  },
+};
+
 const LENGTH_OPTIONS = {
   short: {
     key: "short",
@@ -166,6 +179,19 @@ function getStyleLabel(styleKey) {
 
 function normalizeLength(length) {
   return LENGTH_OPTIONS[length] ? length : "normal";
+}
+
+function normalizePerson(person) {
+  return PERSON_OPTIONS[person] ? person : "third";
+}
+
+function getPersonOptionsForUI() {
+  return Object.entries(PERSON_OPTIONS).map(([key, val]) => ({ key, ...val }));
+}
+
+function getPersonLabel(personKey) {
+  const key = normalizePerson(personKey);
+  return PERSON_OPTIONS[key].label;
 }
 
 function getLengthOptionsForUI() {
@@ -529,11 +555,13 @@ async function streamBiography({
   data,
   style = "narrative",
   length = "normal",
+  person = "third",
   onChunk,
   onStatus,
   retryCount = 1,
 }) {
   const normalizedLength = normalizeLength(length);
+  const normalizedPerson = normalizePerson(person);
   if (onStatus) onStatus("正在安全校验素材…");
   if (onChunk) onChunk("");
 
@@ -546,6 +574,7 @@ async function streamBiography({
         data,
         style: normalizeWritingStyle(style),
         length: normalizedLength,
+        person: normalizedPerson,
       },
       { timeout: 60000 }
     );
@@ -567,6 +596,7 @@ async function streamBiography({
         data,
         style,
         length: normalizedLength,
+        person: normalizedPerson,
         onChunk,
         onStatus,
         retryCount: retryCount - 1,
@@ -694,6 +724,8 @@ function createTimelineNode() {
 function getDefaultTimelineDraft() {
   return {
     nodes: ensureNodeSortOrder(getDefaultTimelineNodes()),
+    subjectName: "",
+    selectedPerson: "third",
     selectedStyle: "narrative",
     selectedLength: "normal",
     manualSort: false,
@@ -714,10 +746,18 @@ function shouldUseDefaultTimelineDraft(stored) {
 
 function resolveTimelineDraft(stored) {
   if (shouldUseDefaultTimelineDraft(stored)) {
-    return getDefaultTimelineDraft();
+    return {
+      ...getDefaultTimelineDraft(),
+      subjectName: String(stored?.subjectName || "").trim(),
+      selectedPerson: normalizePerson(stored?.selectedPerson),
+      selectedStyle: normalizeWritingStyle(stored?.selectedStyle),
+      selectedLength: normalizeLength(stored?.selectedLength),
+    };
   }
   return {
     nodes: ensureNodeSortOrder(stored.nodes),
+    subjectName: String(stored.subjectName || "").trim(),
+    selectedPerson: normalizePerson(stored.selectedPerson),
     selectedStyle: normalizeWritingStyle(stored.selectedStyle),
     selectedLength: normalizeLength(stored.selectedLength),
     manualSort: !!stored.manualSort,
@@ -742,6 +782,10 @@ module.exports = {
   STYLES,
   STYLE_GROUP_META,
   LENGTH_OPTIONS,
+  PERSON_OPTIONS,
+  getPersonOptionsForUI,
+  getPersonLabel,
+  normalizePerson,
   getStyleGroupsForUI,
   getStyleLabel,
   getLengthOptionsForUI,

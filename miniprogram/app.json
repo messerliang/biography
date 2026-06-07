@@ -2,11 +2,13 @@
   "pages": [
     "pages/bio/home/home",
     "pages/bio/form/form",
+    "pages/bio/form-options/form-options",
     "pages/bio/chat/chat",
     "pages/bio/video/video",
     "pages/bio/result/result",
     "pages/bio/history/history",
     "pages/bio/timeline/timeline",
+    "pages/bio/timeline-options/timeline-options",
     "pages/bio/nodeedit/nodeedit",
     "pages/index/index",
     "pages/chatBot/chatBot",

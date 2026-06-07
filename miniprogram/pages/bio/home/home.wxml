@@ -26,7 +26,10 @@
           </view>
           <view class="featured-dark-text">
             <view class="featured-dark-title">时间轴填写</view>
-            <view class="featured-dark-desc">按人生节点逐条记录关键事件，清晰梳理一生轨迹</view>
+            <view class="featured-dark-desc">
+              <view class="featured-dark-desc-line">按人生节点逐条记录关键事件</view>
+              <view class="featured-dark-desc-line">清晰梳理一生轨迹</view>
+            </view>
           </view>
         </view>
         <view class="featured-dark-action">开始 ›</view>

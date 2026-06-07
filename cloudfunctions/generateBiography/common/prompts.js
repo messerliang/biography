@@ -1,6 +1,6 @@
 const STYLE_INSTRUCTIONS = {
   narrative:
-    "纪实叙述：第三人称，按时间线推进，语气温暖克制，像家人讲述的真实故事；多用具体细节，少用空洞抒情。",
+    "纪实叙述：按时间线推进，语气温暖克制，像家人讲述的真实故事；多用具体细节，少用空洞抒情。",
   literary:
     "文学散文：注重意境与情感层次，文笔优美但不堆砌辞藻；比喻来自生活经验，不浮夸。",
   wuxia:
@@ -54,7 +54,8 @@ const SUMMARIZE_SYSTEM_PROMPT = `你是一位信息整理专家。请将用户�
 4. 若素材含敏感违法内容，在 gaps 中标注「素材需用户修改」并勿展开。`;
 
 const SOURCE_CONTEXT = {
-  timeline: "素材来自「时间轴」：用户按人生节点填写，请严格按节点时间顺序成篇，每个节点对应一个阶段。",
+  timeline:
+    "素材来自「时间轴」：用户按人生节点填写，请严格按节点顺序成篇；若提供【主人公】姓名/称呼，第三人称时须以此人称为主角。",
   form: "素材来自「分步填写」：按基本信息、童年、求学、工作、情感、感悟等栏目组织，请按人生阶段自然串联。",
   chat: "素材来自「AI 访谈」：对话记录中用户口述为主，请从对话提取事实，忽略采访者的提问套话。",
   video: "素材来自「视频口述」：语音识别文本可能有口语重复与错字，请整理为连贯事实，不添加新信息。",
@@ -70,12 +71,20 @@ function getLengthInstruction(length) {
   return LENGTH_INSTRUCTIONS[length] || LENGTH_INSTRUCTIONS.normal;
 }
 
-function buildBiographyUserPrompt({ source, material, style, length, truncated }) {
+function getPersonInstruction(person) {
+  if (person === "first") {
+    return "叙述人称：第一人称，全文以「我」撰写，语气亲切真实；若素材标明主人公姓名，以「我」代入该主角，不混用第三人称。";
+  }
+  return "叙述人称：第三人称，以素材中的主人公姓名或「他/她」叙述，具有传记文体感，不使用「我」。";
+}
+
+function buildBiographyUserPrompt({ source, material, style, length, person, truncated }) {
   const sourceHint = SOURCE_CONTEXT[source] || SOURCE_CONTEXT.form;
   const materialLabel = truncated ? "素材（较长内容已做优先截取）" : "原始素材";
 
   return `${sourceHint}
 
+${getPersonInstruction(person || "third")}
 文风要求：${getStyleInstruction(style)}
 篇幅要求：${getLengthInstruction(length)}
 

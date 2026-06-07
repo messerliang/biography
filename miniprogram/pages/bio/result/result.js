@@ -61,8 +61,10 @@ Page({
       const title =
         params.source === "form" && params.data?.name
           ? `${params.data.name}的人生传记`
-          : params.source === "timeline" && params.data?.nodes?.length
-            ? (params.data.nodes.find((n) => n.title)?.title || "人生") + "的传记"
+          : params.source === "timeline" && params.data?.subjectName
+            ? `${params.data.subjectName}的人生传记`
+            : params.source === "timeline" && params.data?.nodes?.length
+              ? (params.data.nodes.find((n) => n.title)?.title || "人生") + "的传记"
             : params.source === "video"
               ? "视频口述传记"
               : params.source === "audio"
@@ -120,6 +122,7 @@ Page({
         data: params.data,
         style: params.style || "narrative",
         length: params.length || "normal",
+        person: params.person || "third",
         onStatus: (statusText) => {
           this.setData({ statusText });
         },

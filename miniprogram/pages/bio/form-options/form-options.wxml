@@ -1,0 +1,83 @@
+<view class="page">
+  <view class="header">
+    <view class="header-title">确认生成设置</view>
+    <view class="header-desc">选择叙述人称、篇幅与文笔风格，即可生成传记</view>
+    <view class="summary" wx:if="{{subjectName}}">
+      <text class="summary-label">姓名</text>
+      <text class="summary-value">{{subjectName}}</text>
+    </view>
+    <view class="summary">
+      <text class="summary-label">已填章节</text>
+      <text class="summary-value">{{filledCount}} 个</text>
+    </view>
+  </view>
+
+  <view class="person-section">
+    <view class="section-title">传记人称</view>
+    <view class="option-list">
+      <view
+        class="option-item {{selectedPerson === item.key ? 'active' : ''}}"
+        wx:for="{{personOptions}}"
+        wx:key="key"
+        bindtap="selectPerson"
+        data-person="{{item.key}}"
+      >
+        <view class="option-label">{{item.label}}</view>
+        <view class="option-desc">{{item.desc}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="picker-section">
+    <view class="picker-block">
+      <view class="picker-header" bindtap="toggleLengthPicker">
+        <text class="picker-label">传记篇幅</text>
+        <text class="picker-value">{{lengthLabel}}</text>
+        <text class="picker-arrow">{{showLengthPicker ? '▲' : '▼'}}</text>
+      </view>
+      <view class="picker-list" wx:if="{{showLengthPicker}}">
+        <view
+          class="picker-item {{selectedLength === item.key ? 'active' : ''}}"
+          wx:for="{{lengthOptions}}"
+          wx:key="key"
+          bindtap="selectLength"
+          data-length="{{item.key}}"
+        >
+          <view class="picker-item-label">{{item.label}}</view>
+          <view class="picker-item-desc">{{item.desc}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="picker-block">
+      <view class="picker-header" bindtap="toggleStylePicker">
+        <text class="picker-label">传记风格</text>
+        <text class="picker-value">{{styleLabel}}</text>
+        <text class="picker-arrow">{{showStylePicker ? '▲' : '▼'}}</text>
+      </view>
+      <view class="picker-list" wx:if="{{showStylePicker}}">
+        <block wx:for="{{styleGroups}}" wx:key="key">
+          <view class="group-title">{{item.label}}</view>
+          <view
+            class="picker-item {{selectedStyle === styleItem.key ? 'active' : ''}}"
+            wx:for="{{item.styles}}"
+            wx:for-item="styleItem"
+            wx:key="key"
+            bindtap="selectStyle"
+            data-style="{{styleItem.key}}"
+          >
+            <view class="picker-item-label">{{styleItem.label}}</view>
+            <view class="picker-item-desc">{{styleItem.desc}}</view>
+          </view>
+        </block>
+      </view>
+    </view>
+  </view>
+
+  <view class="footer-spacer"></view>
+
+  <view class="footer">
+    <button class="btn btn-secondary" bindtap="goBack">上一步</button>
+    <button class="btn btn-primary" bindtap="generate">生成传记</button>
+  </view>
+</view>

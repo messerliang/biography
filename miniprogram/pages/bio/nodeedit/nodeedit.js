@@ -118,6 +118,8 @@ Page({
 
     saveTimelineDraft({
       nodes,
+      subjectName: draft.subjectName || "",
+      selectedPerson: draft.selectedPerson,
       selectedStyle: normalizeWritingStyle(draft.selectedStyle || "narrative"),
       selectedLength: normalizeLength(draft.selectedLength),
       manualSort: draft.manualSort,
@@ -144,6 +146,8 @@ Page({
         const nodes = draft.nodes.filter((n) => n.id !== this.data.nodeId);
         saveTimelineDraft({
           nodes,
+          subjectName: draft.subjectName || "",
+          selectedPerson: draft.selectedPerson,
           selectedStyle: normalizeWritingStyle(draft.selectedStyle || "narrative"),
           selectedLength: normalizeLength(draft.selectedLength),
           manualSort: draft.manualSort,

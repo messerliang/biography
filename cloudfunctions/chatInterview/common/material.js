@@ -1,4 +1,4 @@
-const { SUMMARIZE_CHAR_THRESHOLD } = require("./constants");
+const { TRUNCATE_LIMITS } = require("./constants");
 
 function isNodeFilled(node) {
   return !!(node?.date?.trim?.() || node?.title?.trim?.() || node?.description?.trim?.());
@@ -47,6 +47,7 @@ function buildMaterialFromChat(messages) {
 }
 
 function buildMaterialFromTimeline(data) {
+  const subjectName = String(data?.subjectName || "").trim();
   const nodes = sortTimelineNodes(data?.nodes || [], !!data?.manualSort);
   const events = nodes
     .filter(isNodeFilled)
@@ -58,7 +59,8 @@ function buildMaterialFromTimeline(data) {
       return parts.join("\n");
     })
     .join("\n\n");
-  return events || "（用户尚未填写事件）";
+  const body = events || "（用户尚未填写事件）";
+  return subjectName ? `【主人公】${subjectName}\n\n${body}` : body;
 }
 
 function buildMaterialFromTranscript(text) {
@@ -82,10 +84,25 @@ function buildRawMaterial(source, data) {
   }
 }
 
-function shouldSummarize(material, length) {
-  const size = String(material || "").length;
-  if (size < SUMMARIZE_CHAR_THRESHOLD) return false;
-  return length === "short" || length === "normal" || size >= SUMMARIZE_CHAR_THRESHOLD * 1.5;
+function prepareMaterial(material, length) {
+  const key = TRUNCATE_LIMITS[length] ? length : "normal";
+  const limit = TRUNCATE_LIMITS[key];
+  const text = String(material || "");
+  if (text.length <= limit) {
+    return { text, truncated: false };
+  }
+
+  const slice = text.slice(0, limit);
+  const breakAt = Math.max(
+    slice.lastIndexOf("\n\n"),
+    slice.lastIndexOf("。"),
+    slice.lastIndexOf("\n")
+  );
+  const cut = breakAt > limit * 0.65 ? slice.slice(0, breakAt) : slice;
+  return {
+    text: `${cut}\n\n【系统说明：素材较长，以上为优先保留部分；未给出的内容请勿编造】`,
+    truncated: true,
+  };
 }
 
 function validatePayload(source, data) {
@@ -108,6 +125,6 @@ function validatePayload(source, data) {
 
 module.exports = {
   buildRawMaterial,
-  shouldSummarize,
+  prepareMaterial,
   validatePayload,
 };
