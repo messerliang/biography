@@ -19,7 +19,7 @@ const COMMON_STYLES = {
 const SPECIAL_STYLES = {
   wuxia: {
     label: "武侠风",
-    desc: "侠骨柔情，人生如江湖行旅",
+    desc: "纪实为主 / 纯正武侠 / 娱乐传奇，三档可选",
     group: "special",
   },
   classical: {
@@ -151,7 +151,7 @@ function getStyleInstruction(style) {
     narrative: "采用纪实文学风格，按时间线叙述，温暖真实。",
     literary: "采用文学散文风格，注重意境与情感表达，文笔优美但不浮夸。",
     wuxia:
-      "采用武侠小说笔法，将人生经历写得侠骨柔情、跌宕起伏，可适度运用江湖意象与武侠修辞，但不可歪曲或虚构用户未提及的事实。",
+      "采用武侠笔法：适度写意=纪实为主；均衡=章回武侠、事实严谨；传奇江湖=娱乐向、可适度夸张渲染。",
     classical:
       "采用文言文风格撰写，文辞典雅凝练，可适度穿插白话注释或关键词，确保现代读者能读懂大意，不可歪曲事实。",
     qiongyao:
@@ -165,6 +165,67 @@ function normalizeWritingStyle(style) {
   return STYLES[style] ? style : "narrative";
 }
 
+const WUXIA_TONE_LEVELS = [20, 50, 80];
+const DEFAULT_WUXIA_TONE = WUXIA_TONE_LEVELS[0];
+
+const WUXIA_TONE_META = [
+  {
+    tone: 20,
+    label: "适度写意",
+    summary: "纪实为主",
+    hint: "以真实经历为骨，偶尔点缀江湖侠气。如家人娓娓道来，自然克制。",
+  },
+  {
+    tone: 50,
+    label: "均衡",
+    summary: "纯正武侠",
+    hint: "人生分章，侠气十足。保留真实脉络，文笔尽显江湖韵味。",
+  },
+  {
+    tone: 80,
+    label: "传奇江湖",
+    summary: "娱乐传奇",
+    hint: "专属您的武林传记。拉满戏剧张力，恩怨交织，沉浸感极强。",
+  },
+];
+
+function getWuxiaToneMetaForUI() {
+  return WUXIA_TONE_META.map((item) => ({ ...item }));
+}
+
+function getWuxiaToneMeta(tone) {
+  const idx = wuxiaToneToLevel(tone);
+  return WUXIA_TONE_META[idx] || WUXIA_TONE_META[0];
+}
+
+function normalizeWuxiaTone(tone) {
+  const n = Number(tone);
+  if (!Number.isFinite(n)) return DEFAULT_WUXIA_TONE;
+  return WUXIA_TONE_LEVELS.reduce(
+    (best, level) => (Math.abs(level - n) < Math.abs(best - n) ? level : best),
+    WUXIA_TONE_LEVELS[0]
+  );
+}
+
+function wuxiaToneToLevel(tone) {
+  const t = normalizeWuxiaTone(tone);
+  const idx = WUXIA_TONE_LEVELS.indexOf(t);
+  return idx >= 0 ? idx : 0;
+}
+
+function wuxiaLevelToTone(level) {
+  const idx = Math.min(WUXIA_TONE_LEVELS.length - 1, Math.max(0, Math.round(Number(level) || 0)));
+  return WUXIA_TONE_LEVELS[idx];
+}
+
+function getWuxiaToneLabel(tone) {
+  return getWuxiaToneMeta(tone).label;
+}
+
+function getWuxiaToneHint(tone) {
+  return getWuxiaToneMeta(tone).hint;
+}
+
 function getStyleGroupsForUI() {
   return STYLE_GROUP_META.map((group) => ({
     key: group.key,
@@ -173,8 +234,12 @@ function getStyleGroupsForUI() {
   }));
 }
 
-function getStyleLabel(styleKey) {
-  return STYLES[styleKey]?.label || LEGACY_STYLE_LABELS[styleKey] || STYLES.narrative.label;
+function getStyleLabel(styleKey, wuxiaTone) {
+  const base = STYLES[styleKey]?.label || LEGACY_STYLE_LABELS[styleKey] || STYLES.narrative.label;
+  if (styleKey === "wuxia" && wuxiaTone !== undefined && wuxiaTone !== null) {
+    return `${base} · ${getWuxiaToneLabel(wuxiaTone)}`;
+  }
+  return base;
 }
 
 function normalizeLength(length) {
@@ -466,18 +531,17 @@ function countFilledNodes(nodes) {
 function buildPromptFromTimeline(nodes, style, length) {
   const events = sortTimelineNodes(nodes)
     .filter(isNodeFilled)
-    .map((node, index) => {
-      const parts = [`【节点 ${index + 1}】`];
-      if (node.date?.trim()) parts.push(`时间：${node.date.trim()}`);
-      if (node.title?.trim()) parts.push(`事件：${node.title.trim()}`);
-      if (node.description?.trim()) parts.push(`详情：${node.description.trim()}`);
-      return parts.join("\n");
+    .map((node) => {
+      const label = node.title?.trim() || "人生节点";
+      const datePart = node.date?.trim() ? `（约 ${node.date.trim()}）` : "";
+      const desc = node.description?.trim() || "";
+      return desc ? `【${label}】${datePart}\n${desc}` : `【${label}】${datePart}`;
     })
     .join("\n\n");
 
   return `${getWritingRequirements(style, length)}
 
-用户已通过「时间轴填写」整理了以下关键事件节点。请严格按节点顺序撰写传记，每个节点对应一个阶段，将各节点自然串联成篇：
+用户已通过「时间轴填写」整理了以下关键事件。请严格按事件时间顺序组织叙事，将各节点重述为连贯散文；相邻节点可合并成段，勿机械「一段一节点、段首写年月」：
 
 ${events || "（用户尚未填写事件）"}`;
 }
@@ -556,28 +620,32 @@ async function streamBiography({
   style = "narrative",
   length = "normal",
   person = "third",
+  wuxiaTone,
   onChunk,
   onStatus,
   retryCount = 1,
 }) {
   const normalizedLength = normalizeLength(length);
   const normalizedPerson = normalizePerson(person);
+  const normalizedStyle = normalizeWritingStyle(style);
+  const normalizedWuxiaTone =
+    normalizedStyle === "wuxia" ? normalizeWuxiaTone(wuxiaTone) : undefined;
   if (onStatus) onStatus("正在安全校验素材…");
   if (onChunk) onChunk("");
 
   try {
     if (onStatus) onStatus("正在云端撰写传记…");
-    const result = await callCloudFunction(
-      "generateBiography",
-      {
-        source,
-        data,
-        style: normalizeWritingStyle(style),
-        length: normalizedLength,
-        person: normalizedPerson,
-      },
-      { timeout: 60000 }
-    );
+    const payload = {
+      source,
+      data,
+      style: normalizedStyle,
+      length: normalizedLength,
+      person: normalizedPerson,
+    };
+    if (normalizedStyle === "wuxia") {
+      payload.wuxiaTone = normalizedWuxiaTone;
+    }
+    const result = await callCloudFunction("generateBiography", payload, { timeout: 60000 });
 
     if (!result.success) {
       throw new Error(result.message || "传记生成失败");
@@ -597,6 +665,7 @@ async function streamBiography({
         style,
         length: normalizedLength,
         person: normalizedPerson,
+        wuxiaTone: normalizedWuxiaTone,
         onChunk,
         onStatus,
         retryCount: retryCount - 1,
@@ -637,6 +706,9 @@ function saveBiography(record) {
     source: record.source || "form",
     createdAt: record.createdAt || new Date().toISOString(),
   };
+  if (item.style === "wuxia" && record.wuxiaTone !== undefined) {
+    item.wuxiaTone = normalizeWuxiaTone(record.wuxiaTone);
+  }
   list.unshift(item);
   wx.setStorageSync(STORAGE_KEY, list.slice(0, 50));
   return item;
@@ -707,6 +779,7 @@ function getDefaultChatDraft() {
     messages: [{ role: "assistant", content: WELCOME_MESSAGE }],
     selectedStyle: "narrative",
     selectedLength: "normal",
+    wuxiaTone: DEFAULT_WUXIA_TONE,
   };
 }
 
@@ -728,6 +801,7 @@ function getDefaultTimelineDraft() {
     selectedPerson: "third",
     selectedStyle: "narrative",
     selectedLength: "normal",
+    wuxiaTone: DEFAULT_WUXIA_TONE,
     manualSort: false,
   };
 }
@@ -752,6 +826,7 @@ function resolveTimelineDraft(stored) {
       selectedPerson: normalizePerson(stored?.selectedPerson),
       selectedStyle: normalizeWritingStyle(stored?.selectedStyle),
       selectedLength: normalizeLength(stored?.selectedLength),
+      wuxiaTone: normalizeWuxiaTone(stored?.wuxiaTone),
     };
   }
   return {
@@ -760,6 +835,7 @@ function resolveTimelineDraft(stored) {
     selectedPerson: normalizePerson(stored.selectedPerson),
     selectedStyle: normalizeWritingStyle(stored.selectedStyle),
     selectedLength: normalizeLength(stored.selectedLength),
+    wuxiaTone: normalizeWuxiaTone(stored?.wuxiaTone),
     manualSort: !!stored.manualSort,
   };
 }
@@ -799,6 +875,16 @@ module.exports = {
   getBioPickerState,
   normalizeLength,
   normalizeWritingStyle,
+  DEFAULT_WUXIA_TONE,
+  WUXIA_TONE_LEVELS,
+  WUXIA_TONE_META,
+  getWuxiaToneMetaForUI,
+  getWuxiaToneMeta,
+  normalizeWuxiaTone,
+  wuxiaToneToLevel,
+  wuxiaLevelToTone,
+  getWuxiaToneLabel,
+  getWuxiaToneHint,
   getSourceLabel,
   getSampleBiographies,
   getChatMaterialStats,

@@ -26,12 +26,13 @@ function postJson(url, headers, body) {
         timeout: 110000,
       },
       (res) => {
-        let raw = "";
+        const chunks = [];
         res.on("data", (chunk) => {
-          raw += chunk;
+          chunks.push(chunk);
         });
         res.on("end", () => {
           try {
+            const raw = Buffer.concat(chunks).toString("utf8");
             const json = JSON.parse(raw || "{}");
             if (res.statusCode < 200 || res.statusCode >= 300) {
               const msg = json?.error?.message || json?.message || `DeepSeek HTTP ${res.statusCode}`;

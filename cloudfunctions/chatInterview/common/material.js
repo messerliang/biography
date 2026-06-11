@@ -51,12 +51,11 @@ function buildMaterialFromTimeline(data) {
   const nodes = sortTimelineNodes(data?.nodes || [], !!data?.manualSort);
   const events = nodes
     .filter(isNodeFilled)
-    .map((node, index) => {
-      const parts = [`【节点 ${index + 1}】`];
-      if (node.date?.trim()) parts.push(`时间：${node.date.trim()}`);
-      if (node.title?.trim()) parts.push(`事件：${node.title.trim()}`);
-      if (node.description?.trim()) parts.push(`详情：${node.description.trim()}`);
-      return parts.join("\n");
+    .map((node) => {
+      const label = node.title?.trim() || "人生节点";
+      const datePart = node.date?.trim() ? `（约 ${node.date.trim()}）` : "";
+      const desc = node.description?.trim() || "";
+      return desc ? `【${label}】${datePart}\n${desc}` : `【${label}】${datePart}`;
     })
     .join("\n\n");
   const body = events || "（用户尚未填写事件）";

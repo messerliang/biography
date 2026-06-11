@@ -58,18 +58,23 @@
       <view class="picker-list" wx:if="{{showStylePicker}}">
         <block wx:for="{{styleGroups}}" wx:key="key">
           <view class="group-title">{{item.label}}</view>
-          <view
-            class="picker-item {{selectedStyle === styleItem.key ? 'active' : ''}}"
-            wx:for="{{item.styles}}"
-            wx:for-item="styleItem"
-            wx:key="key"
-            bindtap="selectStyle"
-            data-style="{{styleItem.key}}"
-          >
-            <view class="picker-item-label">{{styleItem.label}}</view>
-            <view class="picker-item-desc">{{styleItem.desc}}</view>
-          </view>
+          <block wx:for="{{item.styles}}" wx:for-item="styleItem" wx:key="key">
+            <view
+              class="picker-item {{selectedStyle === styleItem.key ? 'active' : ''}}"
+              bindtap="selectStyle"
+              data-style="{{styleItem.key}}"
+            >
+              <view class="picker-item-label">{{styleItem.label}}</view>
+              <view class="picker-item-desc">{{styleItem.desc}}</view>
+            </view>
+            <view class="wuxia-tone-inline" wx:if="{{styleItem.key === 'wuxia' && selectedStyle === 'wuxia'}}">
+              <wuxia-tone-slider value="{{wuxiaTone}}" bind:change="onWuxiaToneChange" />
+            </view>
+          </block>
         </block>
+      </view>
+      <view class="wuxia-tone-inline wuxia-tone-folded" wx:if="{{selectedStyle === 'wuxia' && !showStylePicker}}">
+        <wuxia-tone-slider value="{{wuxiaTone}}" bind:change="onWuxiaToneChange" />
       </view>
     </view>
   </view>

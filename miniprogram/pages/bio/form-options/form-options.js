@@ -7,6 +7,8 @@ const {
   getPersonLabel,
   normalizeLength,
   normalizePerson,
+  normalizeWuxiaTone,
+  DEFAULT_WUXIA_TONE,
   getFormDraft,
   saveFormDraft,
   clearFormDraft,
@@ -52,6 +54,7 @@ Page({
     lengthOptions: getLengthOptionsForUI(),
     showStylePicker: false,
     showLengthPicker: false,
+    wuxiaTone: DEFAULT_WUXIA_TONE,
   },
 
   onShow() {
@@ -74,9 +77,10 @@ Page({
       selectedPerson: person,
       personLabel: getPersonLabel(person),
       selectedStyle: style,
-      styleLabel: getStyleLabel(style),
+      styleLabel: getStyleLabel(style, draft.wuxiaTone),
       selectedLength: length,
       lengthLabel: getLengthLabel(length),
+      wuxiaTone: normalizeWuxiaTone(draft.wuxiaTone),
     });
   },
 
@@ -88,6 +92,7 @@ Page({
       selectedPerson: this.data.selectedPerson,
       selectedStyle: this.data.selectedStyle,
       selectedLength: this.data.selectedLength,
+      wuxiaTone: this.data.wuxiaTone,
     });
   },
 
@@ -121,7 +126,17 @@ Page({
     const style = e.currentTarget.dataset.style;
     this.setData({
       selectedStyle: style,
-      styleLabel: getStyleLabel(style),
+      styleLabel: getStyleLabel(style, this.data.wuxiaTone),
+      showStylePicker: style === "wuxia" ? true : this.data.showStylePicker,
+    });
+    this.persistDraft();
+  },
+
+  onWuxiaToneChange(e) {
+    const wuxiaTone = normalizeWuxiaTone(e.detail.value);
+    this.setData({
+      wuxiaTone,
+      styleLabel: getStyleLabel(this.data.selectedStyle, wuxiaTone),
     });
     this.persistDraft();
   },
@@ -132,12 +147,16 @@ Page({
 
   generate() {
     clearFormDraft();
-    navigateToGenerate({
+    const payload = {
       source: "form",
       style: this.data.selectedStyle,
       length: this.data.selectedLength,
       person: this.data.selectedPerson,
       data: this.data.form,
-    });
+    };
+    if (this.data.selectedStyle === "wuxia") {
+      payload.wuxiaTone = this.data.wuxiaTone;
+    }
+    navigateToGenerate(payload);
   },
 });

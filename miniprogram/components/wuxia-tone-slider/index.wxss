@@ -1,0 +1,64 @@
+.wuxia-tone {
+  padding: 20rpx 0 4rpx;
+}
+
+.wuxia-tone-title {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #3d2b1f;
+  margin-bottom: 12rpx;
+}
+
+.wuxia-tone-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4rpx;
+  gap: 8rpx;
+}
+
+.wuxia-tone-label-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.wuxia-tone-label-col:first-child {
+  align-items: flex-start;
+}
+
+.wuxia-tone-label-col:last-child {
+  align-items: flex-end;
+}
+
+.wuxia-tone-label {
+  font-size: 22rpx;
+  color: #a89580;
+  font-weight: 600;
+}
+
+.wuxia-tone-summary {
+  font-size: 20rpx;
+  color: #c4b5a0;
+  margin-top: 4rpx;
+}
+
+.wuxia-tone-label-col.active .wuxia-tone-label {
+  color: #8b6914;
+}
+
+.wuxia-tone-label-col.active .wuxia-tone-summary {
+  color: #a89580;
+}
+
+.wuxia-tone-slider {
+  margin: 0;
+}
+
+.wuxia-tone-hint {
+  font-size: 22rpx;
+  color: #a89580;
+  line-height: 1.6;
+  margin-top: 12rpx;
+}

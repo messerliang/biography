@@ -1,0 +1,28 @@
+<view class="wuxia-tone">
+  <view class="wuxia-tone-title">江湖浓度</view>
+  <view class="wuxia-tone-labels">
+    <view
+      wx:for="{{levelMeta}}"
+      wx:key="tone"
+      wx:for-index="idx"
+      class="wuxia-tone-label-col {{level === idx ? 'active' : ''}}"
+    >
+      <text class="wuxia-tone-label">{{item.label}}</text>
+      <text class="wuxia-tone-summary">{{item.summary}}</text>
+    </view>
+  </view>
+  <slider
+    class="wuxia-tone-slider"
+    min="0"
+    max="2"
+    step="1"
+    value="{{level}}"
+    activeColor="#8b6914"
+    backgroundColor="#e8dfd3"
+    block-color="#c4a574"
+    block-size="24"
+    bindchanging="onChanging"
+    bindchange="onChange"
+  />
+  <view class="wuxia-tone-hint">{{hint}}</view>
+</view>

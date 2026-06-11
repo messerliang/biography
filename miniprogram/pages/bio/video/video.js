@@ -3,6 +3,8 @@ const {
   getLengthOptionsForUI,
   normalizeLength,
   navigateToGenerate,
+  normalizeWuxiaTone,
+  DEFAULT_WUXIA_TONE,
 } = require("../../../utils/bio");
 const { chooseVideo, chooseAudio, parseVideo, parseAudio } = require("../../../utils/videoParser");
 
@@ -34,6 +36,7 @@ Page({
     transcript: "",
     selectedStyle: "narrative",
     selectedLength: "normal",
+    wuxiaTone: DEFAULT_WUXIA_TONE,
     styleGroups: getStyleGroupsForUI(),
     lengthOptions: getLengthOptionsForUI(),
   },
@@ -95,6 +98,10 @@ Page({
 
   selectStyle(e) {
     this.setData({ selectedStyle: e.currentTarget.dataset.style });
+  },
+
+  onWuxiaToneChange(e) {
+    this.setData({ wuxiaTone: normalizeWuxiaTone(e.detail.value) });
   },
 
   selectLength(e) {
@@ -177,6 +184,7 @@ Page({
       source: isAudio ? "audio" : "video",
       style: this.data.selectedStyle,
       length: this.data.selectedLength,
+      wuxiaTone: this.data.selectedStyle === "wuxia" ? this.data.wuxiaTone : undefined,
       data: { text },
     });
   },

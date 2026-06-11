@@ -3,7 +3,7 @@ const { chatCompletion } = require("./common/deepseek");
 const { filterInput, filterOutput } = require("./common/contentFilter");
 const { checkRateLimit } = require("./common/rateLimit");
 const { validatePayload, prepareMaterial } = require("./common/material");
-const { BIOGRAPHY_SYSTEM_PROMPT, buildBiographyUserPrompt } = require("./common/prompts");
+const { BIOGRAPHY_SYSTEM_PROMPT, buildBiographyUserPrompt, normalizeWuxiaTone } = require("./common/prompts");
 const { writeAuditLog, sha256 } = require("./common/audit");
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
@@ -30,6 +30,7 @@ exports.main = async (event) => {
   const style = VALID_STYLES.includes(event?.style) ? event.style : "narrative";
   const length = VALID_LENGTHS.includes(event?.length) ? event.length : "normal";
   const person = VALID_PERSONS.includes(event?.person) ? event.person : "third";
+  const wuxiaTone = style === "wuxia" ? normalizeWuxiaTone(event?.wuxiaTone) : undefined;
 
   const validation = validatePayload(source, data);
   if (!validation.ok) {
@@ -56,6 +57,7 @@ exports.main = async (event) => {
             length,
             person,
             truncated: prepared.truncated,
+            wuxiaTone,
           }),
         },
       ],
@@ -84,6 +86,7 @@ exports.main = async (event) => {
         length,
         person,
         truncated: prepared.truncated,
+        wuxiaTone: style === "wuxia" ? wuxiaTone : undefined,
         charCount: outputCheck.text.length,
       },
     };

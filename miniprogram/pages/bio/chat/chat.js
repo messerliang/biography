@@ -12,6 +12,8 @@ const {
   clearChatDraft,
   getDefaultChatDraft,
   WELCOME_MESSAGE,
+  normalizeWuxiaTone,
+  DEFAULT_WUXIA_TONE,
 } = require("../../../utils/bio");
 const { createRecorderSession } = require("../../../utils/voiceInput");
 
@@ -30,6 +32,7 @@ Page({
     lengthOptions: getLengthOptionsForUI(),
     showStylePicker: false,
     showLengthPicker: false,
+    wuxiaTone: DEFAULT_WUXIA_TONE,
     materialTip: "",
     materialSufficient: false,
     userMsgCount: 0,
@@ -71,9 +74,10 @@ Page({
     this.setData({
       messages: draft.messages,
       selectedStyle: style,
-      styleLabel: getStyleLabel(style),
+      styleLabel: getStyleLabel(style, draft.wuxiaTone),
       selectedLength: length,
       lengthLabel: getLengthLabel(length),
+      wuxiaTone: normalizeWuxiaTone(draft.wuxiaTone),
     });
     this.updateMaterialStats();
   },
@@ -84,6 +88,7 @@ Page({
       messages: this.data.messages,
       selectedStyle: this.data.selectedStyle,
       selectedLength: this.data.selectedLength,
+      wuxiaTone: this.data.wuxiaTone,
     });
   },
 
@@ -122,8 +127,17 @@ Page({
     const style = e.currentTarget.dataset.style;
     this.setData({
       selectedStyle: style,
-      styleLabel: getStyleLabel(style),
-      showStylePicker: false,
+      styleLabel: getStyleLabel(style, this.data.wuxiaTone),
+      showStylePicker: style === "wuxia" ? true : this.data.showStylePicker,
+    });
+    this.saveDraft();
+  },
+
+  onWuxiaToneChange(e) {
+    const wuxiaTone = normalizeWuxiaTone(e.detail.value);
+    this.setData({
+      wuxiaTone,
+      styleLabel: getStyleLabel(this.data.selectedStyle, wuxiaTone),
     });
     this.saveDraft();
   },
@@ -239,6 +253,7 @@ Page({
         source: "chat",
         style: this.data.selectedStyle,
         length: this.data.selectedLength,
+        wuxiaTone: this.data.selectedStyle === "wuxia" ? this.data.wuxiaTone : undefined,
         data: { messages: chatMessages },
       });
     };

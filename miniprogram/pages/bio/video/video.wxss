@@ -177,6 +177,12 @@
   margin-top: 32rpx;
 }
 
+.wuxia-tone-inline {
+  margin: 0 0 16rpx 32rpx;
+  padding: 0 0 8rpx 20rpx;
+  border-left: 4rpx solid rgba(196, 165, 116, 0.45);
+}
+
 .section-label,
 .style-label {
   font-size: 28rpx;

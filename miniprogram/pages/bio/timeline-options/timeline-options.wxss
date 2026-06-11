@@ -49,6 +49,19 @@
   border: 1rpx solid rgba(232, 223, 211, 0.75);
 }
 
+.wuxia-tone-inline {
+  margin: 0 0 8rpx 56rpx;
+  padding: 0 0 16rpx 24rpx;
+  border-left: 4rpx solid rgba(196, 165, 116, 0.45);
+}
+
+.wuxia-tone-folded {
+  margin: 0 0 16rpx;
+  padding: 0 0 8rpx;
+  border-top: 1rpx solid #f0ebe3;
+  border-left: none;
+}
+
 .section-title {
   font-size: 28rpx;
   font-weight: 600;

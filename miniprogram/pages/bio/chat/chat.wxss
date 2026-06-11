@@ -88,6 +88,19 @@
   margin-bottom: 12rpx;
 }
 
+.wuxia-tone-inline {
+  margin: 8rpx 0 12rpx 32rpx;
+  padding: 0 0 8rpx 20rpx;
+  border-left: 4rpx solid rgba(196, 165, 116, 0.45);
+}
+
+.wuxia-tone-folded {
+  margin: 0 0 12rpx;
+  padding: 12rpx 0 0;
+  border-top: 1rpx solid #f0ebe3;
+  border-left: none;
+}
+
 .style-header {
   display: flex;
   align-items: center;

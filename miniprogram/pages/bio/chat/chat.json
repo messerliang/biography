@@ -1,4 +1,6 @@
 {
   "navigationBarTitleText": "AI 访谈",
-  "usingComponents": {}
+  "usingComponents": {
+    "wuxia-tone-slider": "/components/wuxia-tone-slider/index"
+  }
 }
