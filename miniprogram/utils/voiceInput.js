@@ -1,6 +1,58 @@
 const { cloudRequest } = require("./cloudRequest");
 
 const BIO_BOT_ID = "agent-ryan-3ghdryeyb5ad5812";
+const SPEECH_SERVICE_TYPE = "16k_zh";
+
+function ensureRecordPermission() {
+  return new Promise((resolve, reject) => {
+    wx.getSetting({
+      success: (res) => {
+        const auth = res.authSetting || {};
+        if (auth["scope.record"]) {
+          resolve();
+          return;
+        }
+        if (auth["scope.record"] === false) {
+          wx.showModal({
+            title: "需要麦克风权限",
+            content: "请在设置中允许使用麦克风，以便语音输入",
+            confirmText: "去设置",
+            success: (modalRes) => {
+              if (modalRes.confirm) {
+                wx.openSetting({
+                  success: (settingRes) => {
+                    if (settingRes.authSetting && settingRes.authSetting["scope.record"]) {
+                      resolve();
+                    } else {
+                      reject(new Error("未授权麦克风"));
+                    }
+                  },
+                  fail: reject,
+                });
+              } else {
+                reject(new Error("未授权麦克风"));
+              }
+            },
+          });
+          return;
+        }
+        wx.authorize({
+          scope: "scope.record",
+          success: () => resolve(),
+          fail: () => {
+            wx.showModal({
+              title: "需要麦克风权限",
+              content: "请允许使用麦克风，以便语音输入您的故事",
+              showCancel: false,
+            });
+            reject(new Error("未授权麦克风"));
+          },
+        });
+      },
+      fail: reject,
+    });
+  });
+}
 
 function uploadAudio(tempFilePath, onProgress) {
   const ext = (tempFilePath.split(".").pop() || "aac").toLowerCase();
@@ -36,6 +88,7 @@ async function speechToTextFromUrl(url, voiceFormat) {
     data: {
       url,
       voiceFormat: voiceFormat || "aac",
+      engSerViceType: SPEECH_SERVICE_TYPE,
     },
     timeout: 300000,
   });
@@ -72,11 +125,29 @@ async function transcribeLocalAudio(tempFilePath, onUploadProgress) {
 function createRecorderSession({ onStatusChange } = {}) {
   const recorder = wx.getRecorderManager();
   let active = false;
+  let cancelled = false;
   let pendingResolve = null;
   let pendingReject = null;
 
   recorder.onStop(async (res) => {
-    if (!pendingResolve) return;
+    const wasCancelled = cancelled;
+    cancelled = false;
+
+    if (wasCancelled || !pendingResolve) {
+      active = false;
+      if (onStatusChange) onStatusChange("idle");
+      return;
+    }
+
+    if (!res.tempFilePath) {
+      active = false;
+      if (onStatusChange) onStatusChange("idle");
+      pendingReject(new Error("录音时间太短，请按住多说一会儿"));
+      pendingResolve = null;
+      pendingReject = null;
+      return;
+    }
+
     if (onStatusChange) onStatusChange("transcribing");
     try {
       const result = await transcribeLocalAudio(res.tempFilePath);
@@ -94,23 +165,32 @@ function createRecorderSession({ onStatusChange } = {}) {
 
   recorder.onError((err) => {
     active = false;
+    cancelled = false;
     if (onStatusChange) onStatusChange("idle");
-    if (pendingReject) pendingReject(err);
+    if (pendingReject) {
+      pendingReject(err);
+    }
     pendingResolve = null;
     pendingReject = null;
   });
 
   return {
+    isActive() {
+      return active;
+    },
     begin() {
-      if (active) return;
-      active = true;
-      if (onStatusChange) onStatusChange("recording");
-      recorder.start({
-        duration: 120000,
-        sampleRate: 16000,
-        numberOfChannels: 1,
-        encodeBitRate: 48000,
-        format: "aac",
+      if (active) return Promise.resolve();
+      cancelled = false;
+      return ensureRecordPermission().then(() => {
+        active = true;
+        if (onStatusChange) onStatusChange("recording");
+        recorder.start({
+          duration: 120000,
+          sampleRate: 16000,
+          numberOfChannels: 1,
+          encodeBitRate: 48000,
+          format: "aac",
+        });
       });
     },
     end() {
@@ -125,6 +205,8 @@ function createRecorderSession({ onStatusChange } = {}) {
       });
     },
     cancel() {
+      if (!active) return;
+      cancelled = true;
       active = false;
       pendingResolve = null;
       pendingReject = null;
@@ -138,4 +220,5 @@ module.exports = {
   transcribeLocalAudio,
   createRecorderSession,
   getVoiceFormat,
+  ensureRecordPermission,
 };

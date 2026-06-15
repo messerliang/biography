@@ -35,67 +35,18 @@
   </scroll-view>
 
   <view class="chat-footer">
-    <view class="length-section">
-      <view class="style-header" bindtap="toggleLengthPicker">
-        <text class="style-label">传记篇幅</text>
-        <text class="style-value">{{lengthLabel}}</text>
-        <text class="style-arrow">{{showLengthPicker ? '▲' : '▼'}}</text>
-      </view>
-      <view class="style-panel" wx:if="{{showLengthPicker}}">
-        <view
-          class="style-option {{selectedLength === item.key ? 'active' : ''}}"
-          wx:for="{{lengthOptions}}"
-          wx:key="key"
-          bindtap="selectLength"
-          data-length="{{item.key}}"
-        >
-          <view class="style-option-name">{{item.label}}</view>
-          <view class="style-option-desc">{{item.desc}}</view>
-        </view>
-      </view>
-    </view>
-
-    <view class="style-section">
-      <view class="style-header" bindtap="toggleStylePicker">
-        <text class="style-label">传记风格</text>
-        <text class="style-value">{{styleLabel}}</text>
-        <text class="style-arrow">{{showStylePicker ? '▲' : '▼'}}</text>
-      </view>
-      <view class="style-panel" wx:if="{{showStylePicker}}">
-        <block wx:for="{{styleGroups}}" wx:key="key">
-          <view class="style-group-title">{{item.label}}</view>
-          <block wx:for="{{item.styles}}" wx:for-item="styleItem" wx:key="key">
-            <view
-              class="style-option {{selectedStyle === styleItem.key ? 'active' : ''}}"
-              bindtap="selectStyle"
-              data-style="{{styleItem.key}}"
-            >
-              <view class="style-option-name">{{styleItem.label}}</view>
-              <view class="style-option-desc">{{styleItem.desc}}</view>
-            </view>
-            <view class="wuxia-tone-inline" wx:if="{{styleItem.key === 'wuxia' && selectedStyle === 'wuxia'}}">
-              <wuxia-tone-slider value="{{wuxiaTone}}" bind:change="onWuxiaToneChange" />
-            </view>
-          </block>
-        </block>
-      </view>
-      <view class="wuxia-tone-inline wuxia-tone-folded" wx:if="{{selectedStyle === 'wuxia' && !showStylePicker}}">
-        <wuxia-tone-slider value="{{wuxiaTone}}" bind:change="onWuxiaToneChange" />
-      </view>
-    </view>
-
     <view class="voice-status" wx:if="{{voiceStatus}}">{{voiceStatus}}</view>
 
     <view class="input-row">
       <view
         class="voice-btn {{recording ? 'recording' : ''}}"
-        bindtouchstart="onVoiceTouchStart"
-        bindtouchend="onVoiceTouchEnd"
-        bindtouchcancel="onVoiceTouchCancel"
+        catchtouchstart="onVoiceTouchStart"
+        catchtouchend="onVoiceTouchEnd"
+        catchtouchcancel="onVoiceTouchCancel"
       >
         🎙
       </view>
-      <input
+      <textarea
         class="chat-input"
         placeholder="讲述您的故事……"
         value="{{inputValue}}"
@@ -103,8 +54,14 @@
         confirm-type="send"
         bindconfirm="sendMessage"
         disabled="{{isTyping || recording}}"
+        auto-height
+        maxlength="-1"
+        show-confirm-bar="{{false}}"
       />
-      <button class="send-btn" bindtap="sendMessage" disabled="{{isTyping || recording || !inputValue.trim()}}">发送</button>
+      <view
+        class="send-btn {{isTyping || recording || !canSend ? 'send-btn--disabled' : ''}}"
+        bindtap="sendMessage"
+      >发送</view>
     </view>
 
     <button class="generate-btn" bindtap="generateBiography" disabled="{{isTyping || recording || messages.length < 2}}">

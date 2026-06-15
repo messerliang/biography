@@ -39,11 +39,14 @@ function buildMaterialFromForm(form) {
   return sections || "（用户尚未填写详细信息）";
 }
 
-function buildMaterialFromChat(messages) {
-  return (messages || [])
+function buildMaterialFromChat(data) {
+  const messages = Array.isArray(data) ? data : data?.messages;
+  const subjectName = String(data?.subjectName || "").trim();
+  const body = (messages || [])
     .filter((m) => m.role === "user" || m.role === "assistant")
     .map((m) => `${m.role === "user" ? "用户" : "采访者"}：${m.content}`)
     .join("\n\n");
+  return subjectName ? `【主人公】${subjectName}\n\n${body || "（无访谈内容）"}` : body || "（无访谈内容）";
 }
 
 function buildMaterialFromTimeline(data) {
@@ -71,7 +74,7 @@ function buildRawMaterial(source, data) {
     case "form":
       return buildMaterialFromForm(data);
     case "chat":
-      return buildMaterialFromChat(data?.messages);
+      return buildMaterialFromChat(data);
     case "timeline":
       return buildMaterialFromTimeline(data);
     case "video":

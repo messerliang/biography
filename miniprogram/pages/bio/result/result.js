@@ -62,6 +62,8 @@ Page({
       const title =
         params.source === "form" && params.data?.name
           ? `${params.data.name}的人生传记`
+          : params.source === "chat" && params.data?.subjectName
+            ? `${params.data.subjectName}的人生传记`
           : params.source === "timeline" && params.data?.subjectName
             ? `${params.data.subjectName}的人生传记`
             : params.source === "timeline" && params.data?.nodes?.length

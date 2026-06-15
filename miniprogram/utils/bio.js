@@ -777,6 +777,8 @@ const WELCOME_MESSAGE =
 function getDefaultChatDraft() {
   return {
     messages: [{ role: "assistant", content: WELCOME_MESSAGE }],
+    subjectName: "",
+    selectedPerson: "third",
     selectedStyle: "narrative",
     selectedLength: "normal",
     wuxiaTone: DEFAULT_WUXIA_TONE,

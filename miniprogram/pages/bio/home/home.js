@@ -1,8 +1,19 @@
 const { getBiographyList } = require("../../../utils/bio");
+const { loadHeroCalligraphyFont } = require("../../../utils/heroFont");
 
 Page({
   data: {
     historyCount: 0,
+    heroFontReady: false,
+  },
+
+  onLoad() {
+    loadHeroCalligraphyFont().then((loaded) => {
+      this.setData({ heroFontReady: loaded });
+      if (!loaded) {
+        console.warn("hero title font fallback to system serif");
+      }
+    });
   },
 
   onShow() {

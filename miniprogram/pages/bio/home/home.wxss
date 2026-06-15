@@ -18,17 +18,35 @@
 }
 
 .hero-title {
-  font-size: 58rpx;
-  font-weight: 700;
-  color: #3d2b1f;
-  letter-spacing: 4rpx;
-  line-height: 1.15;
+  font-family: "STKaiti", "KaiTi", "华文楷体", serif;
+  font-size: 88rpx;
+  font-weight: 600;
+  color: #24160e;
+  letter-spacing: 10rpx;
+  line-height: 1.08;
   flex-shrink: 0;
+  opacity: 0.92;
+  transition: opacity 0.25s ease, font-family 0.1s ease;
+}
+
+.hero-title--loaded {
+  font-family: "HeroCalligraphy", "STKaiti", "KaiTi", serif;
+  font-weight: 400;
+  transform: rotate(-1.2deg) scale(1.03, 1.05);
+  transform-origin: center center;
+  -webkit-text-stroke: 0.8rpx rgba(36, 22, 14, 0.4);
+  text-shadow:
+    0 1rpx 0 rgba(255, 255, 255, 0.4),
+    0 6rpx 16rpx rgba(61, 43, 31, 0.14),
+    1rpx 0 0 rgba(36, 22, 14, 0.45),
+    -1rpx 0 0 rgba(36, 22, 14, 0.45),
+    0 1rpx 0 rgba(36, 22, 14, 0.3);
+  opacity: 1;
 }
 
 .hero-divider {
   width: 2rpx;
-  height: 76rpx;
+  height: 108rpx;
   flex-shrink: 0;
   background: linear-gradient(
     180deg,
@@ -50,7 +68,7 @@
 }
 
 .hero-subtitle-line {
-  font-size: 28rpx;
+  font-size: 24rpx;
   color: #8b7355;
   letter-spacing: 3rpx;
   line-height: 1.35;
@@ -401,6 +419,10 @@
   background: #fff;
   border-radius: 24rpx;
   box-shadow: 0 4rpx 20rpx rgba(61, 43, 31, 0.06);
+}
+
+.history-label {
+  letter-spacing: 6rpx;
 }
 
 .history-count {

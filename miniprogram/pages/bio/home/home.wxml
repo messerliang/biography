@@ -1,7 +1,7 @@
 <view class="page">
   <view class="hero">
     <view class="hero-top">
-      <view class="hero-title">人生传记</view>
+      <view class="hero-title {{heroFontReady ? 'hero-title--loaded' : ''}}">人生传记</view>
       <view class="hero-divider"></view>
       <view class="hero-subtitle">
         <view class="hero-subtitle-line">记录故事</view>
@@ -91,7 +91,7 @@
 
   <view class="history-link" bindtap="goHistory">
     <text class="history-icon">📚</text>
-    <text>我的传记</text>
+    <text class="history-label">我的传记</text>
     <text class="history-count" wx:if="{{historyCount > 0}}">（{{historyCount}}）</text>
   </view>
 </view>

@@ -4,6 +4,7 @@
     "pages/bio/form/form",
     "pages/bio/form-options/form-options",
     "pages/bio/chat/chat",
+    "pages/bio/chat-options/chat-options",
     "pages/bio/video/video",
     "pages/bio/result/result",
     "pages/bio/history/history",
@@ -36,5 +37,10 @@
     "connectSocket": 120000,
     "uploadFile": 600000,
     "downloadFile": 120000
+  },
+  "permission": {
+    "scope.record": {
+      "desc": "用于语音输入您的传记内容"
+    }
   }
 }

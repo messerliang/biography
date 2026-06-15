@@ -1,19 +1,10 @@
 const {
-  getStyleGroupsForUI,
-  getStyleLabel,
-  getLengthOptionsForUI,
-  getLengthLabel,
-  normalizeLength,
   getChatMaterialStats,
   streamChatReply,
-  navigateToGenerate,
   saveChatDraft,
   getChatDraft,
   clearChatDraft,
-  getDefaultChatDraft,
   WELCOME_MESSAGE,
-  normalizeWuxiaTone,
-  DEFAULT_WUXIA_TONE,
 } = require("../../../utils/bio");
 const { createRecorderSession } = require("../../../utils/voiceInput");
 
@@ -24,25 +15,19 @@ Page({
     isTyping: false,
     typingText: "",
     scrollTo: "",
-    selectedStyle: "narrative",
-    styleLabel: getStyleLabel("narrative"),
-    selectedLength: "normal",
-    lengthLabel: getLengthLabel("normal"),
-    styleGroups: getStyleGroupsForUI(),
-    lengthOptions: getLengthOptionsForUI(),
-    showStylePicker: false,
-    showLengthPicker: false,
-    wuxiaTone: DEFAULT_WUXIA_TONE,
     materialTip: "",
     materialSufficient: false,
     userMsgCount: 0,
     recording: false,
     voiceStatus: "",
+    canSend: false,
   },
 
   recorderSession: null,
 
   onLoad() {
+    this.initRecorderSession();
+
     const draft = getChatDraft();
     if (draft && draft.messages && draft.messages.length > 1) {
       wx.showModal({
@@ -69,26 +54,18 @@ Page({
   },
 
   applyDraft(draft) {
-    const style = draft.selectedStyle || "narrative";
-    const length = normalizeLength(draft.selectedLength);
     this.setData({
       messages: draft.messages,
-      selectedStyle: style,
-      styleLabel: getStyleLabel(style, draft.wuxiaTone),
-      selectedLength: length,
-      lengthLabel: getLengthLabel(length),
-      wuxiaTone: normalizeWuxiaTone(draft.wuxiaTone),
     });
     this.updateMaterialStats();
   },
 
   saveDraft() {
     if (this.data.messages.length <= 1) return;
+    const stored = getChatDraft() || {};
     saveChatDraft({
+      ...stored,
       messages: this.data.messages,
-      selectedStyle: this.data.selectedStyle,
-      selectedLength: this.data.selectedLength,
-      wuxiaTone: this.data.wuxiaTone,
     });
   },
 
@@ -102,44 +79,11 @@ Page({
   },
 
   onInput(e) {
-    this.setData({ inputValue: e.detail.value });
-  },
-
-  toggleLengthPicker() {
-    this.setData({ showLengthPicker: !this.data.showLengthPicker });
-  },
-
-  toggleStylePicker() {
-    this.setData({ showStylePicker: !this.data.showStylePicker });
-  },
-
-  selectLength(e) {
-    const length = normalizeLength(e.currentTarget.dataset.length);
+    const value = e.detail.value;
     this.setData({
-      selectedLength: length,
-      lengthLabel: getLengthLabel(length),
-      showLengthPicker: false,
+      inputValue: value,
+      canSend: value.trim().length > 0,
     });
-    this.saveDraft();
-  },
-
-  selectStyle(e) {
-    const style = e.currentTarget.dataset.style;
-    this.setData({
-      selectedStyle: style,
-      styleLabel: getStyleLabel(style, this.data.wuxiaTone),
-      showStylePicker: style === "wuxia" ? true : this.data.showStylePicker,
-    });
-    this.saveDraft();
-  },
-
-  onWuxiaToneChange(e) {
-    const wuxiaTone = normalizeWuxiaTone(e.detail.value);
-    this.setData({
-      wuxiaTone,
-      styleLabel: getStyleLabel(this.data.selectedStyle, wuxiaTone),
-    });
-    this.saveDraft();
   },
 
   scrollToBottom() {
@@ -158,7 +102,8 @@ Page({
     } else {
       text = this.data.inputValue.trim();
     }
-    if (!text || this.data.isTyping) return;
+    if (!text || this.data.isTyping || this.data.recording) return;
+    if (typeof e !== "string" && !this.data.canSend) return;
 
     const userMessages = [
       ...this.data.messages.filter((m) => m.role === "user" || m.role === "assistant"),
@@ -167,6 +112,7 @@ Page({
 
     this.setData({
       inputValue: "",
+      canSend: false,
       messages: userMessages,
       isTyping: true,
       typingText: "",
@@ -203,8 +149,8 @@ Page({
     this.scrollToBottom();
   },
 
-  onVoiceTouchStart() {
-    if (this.data.isTyping || this.data.recording) return;
+  initRecorderSession() {
+    if (this.recorderSession) return;
     this.recorderSession = createRecorderSession({
       onStatusChange: (status) => {
         const map = {
@@ -214,16 +160,30 @@ Page({
         };
         this.setData({
           voiceStatus: map[status] || "",
-          recording: status === "recording",
+          recording: status === "recording" || status === "transcribing",
         });
       },
     });
-    this.recorderSession.begin();
+  },
+
+  onVoiceTouchStart() {
+    if (this.data.isTyping || this.data.recording) return;
+    this.initRecorderSession();
+    this.recorderSession
+      .begin()
+      .catch((err) => {
+        console.error(err);
+        wx.showToast({
+          title: err.message || "无法开始录音",
+          icon: "none",
+        });
+      });
   },
 
   onVoiceTouchEnd() {
-    if (!this.data.recording || !this.recorderSession) return;
-    this.recorderSession
+    const session = this.recorderSession;
+    if (!session || !session.isActive()) return;
+    session
       .end()
       .then((text) => {
         this.setData({ recording: false, voiceStatus: "" });
@@ -231,7 +191,10 @@ Page({
       })
       .catch((err) => {
         console.error(err);
-        wx.showToast({ title: "语音识别失败", icon: "none" });
+        wx.showToast({
+          title: err.message || "语音识别失败",
+          icon: "none",
+        });
         this.setData({ recording: false, voiceStatus: "" });
       });
   },
@@ -248,14 +211,8 @@ Page({
     const stats = getChatMaterialStats(chatMessages);
 
     const proceed = () => {
-      clearChatDraft();
-      navigateToGenerate({
-        source: "chat",
-        style: this.data.selectedStyle,
-        length: this.data.selectedLength,
-        wuxiaTone: this.data.selectedStyle === "wuxia" ? this.data.wuxiaTone : undefined,
-        data: { messages: chatMessages },
-      });
+      this.saveDraft();
+      wx.navigateTo({ url: "/pages/bio/chat-options/chat-options" });
     };
 
     if (!stats.sufficient) {
