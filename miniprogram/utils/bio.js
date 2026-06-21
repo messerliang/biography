@@ -185,7 +185,7 @@ const WUXIA_TONE_META = [
     tone: 80,
     label: "传奇江湖",
     summary: "娱乐传奇",
-    hint: "专属您的武林传记。拉满戏剧张力，恩怨交织，沉浸感极强。",
+    hint: "专属江湖人物志。开篇抓人、对话生动、章节个性化，适合分享。",
   },
 ];
 
@@ -551,11 +551,25 @@ function isTimeoutError(err) {
   const code = String(err?.errCode || err?.code || "");
   return (
     code === "-504003" ||
+    code === "-504002" ||
+    code === "504003" ||
+    code === "504002" ||
     msg.includes("timeout") ||
     msg.includes("timed out") ||
     msg.includes("超时") ||
-    msg.includes("time_limit_exceeded")
+    msg.includes("time_limit_exceeded") ||
+    msg.includes("function execution timeout") ||
+    msg.includes("errcode\":87014")
   );
+}
+
+function getGenerateErrorMessage(err) {
+  if (isTimeoutError(err)) {
+    return "生成超时（云函数上限 60 秒）。请稍后重试、选「短篇」或精简素材。";
+  }
+  const msg = String(err?.message || err?.errMsg || "").trim();
+  if (msg) return msg;
+  return "生成失败，请确认云函数 generateBiography 已部署且 DEEPSEEK_API_KEY 已配置。";
 }
 
 function saveGeneratePayload(payload) {
@@ -645,7 +659,7 @@ async function streamBiography({
     if (normalizedStyle === "wuxia") {
       payload.wuxiaTone = normalizedWuxiaTone;
     }
-    const result = await callCloudFunction("generateBiography", payload, { timeout: 60000 });
+    const result = await callCloudFunction("generateBiography", payload, { timeout: 90000 });
 
     if (!result.success) {
       throw new Error(result.message || "传记生成失败");
@@ -902,6 +916,8 @@ module.exports = {
   buildPromptFromVideo,
   streamBiography,
   streamChatReply,
+  getGenerateErrorMessage,
+  isTimeoutError,
   getBiographyList,
   saveBiography,
   deleteBiography,

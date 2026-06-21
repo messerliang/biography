@@ -205,6 +205,10 @@ Page({
   },
 
   generateBiography() {
+    if (this.data.isTyping || this.data.recording || this.data.messages.length < 2) {
+      return;
+    }
+
     const chatMessages = this.data.messages.filter(
       (m) => m.role === "user" || m.role === "assistant"
     );

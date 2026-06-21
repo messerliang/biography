@@ -1,89 +1,219 @@
-function wrapText(ctx, text, maxWidth) {
+const { parseBiographyContent } = require("./bioContentFormat");
+const { loadHeroCalligraphyFont, HERO_FONT_FAMILY } = require("./heroFont");
+const { loadCommentFont, COMMENT_FONT_FAMILY } = require("./commentFont");
+
+function wrapText(ctx, text, maxWidth, firstLineIndent = 0) {
   const paragraphs = String(text || "").split("\n");
   const lines = [];
 
   paragraphs.forEach((paragraph, pIndex) => {
     if (!paragraph) {
-      lines.push("");
+      if (pIndex < paragraphs.length - 1) lines.push({ text: "", indent: 0 });
       return;
     }
+
     let line = "";
+    let isFirstLineOfParagraph = true;
+
     for (const char of paragraph) {
       const test = line + char;
-      if (ctx.measureText(test).width > maxWidth && line) {
-        lines.push(line);
+      const indent = isFirstLineOfParagraph ? firstLineIndent : 0;
+      const limit = maxWidth - indent;
+
+      if (ctx.measureText(test).width > limit && line) {
+        lines.push({ text: line, indent: isFirstLineOfParagraph ? firstLineIndent : 0 });
         line = char;
+        isFirstLineOfParagraph = false;
       } else {
         line = test;
       }
     }
-    if (line) lines.push(line);
-    if (pIndex < paragraphs.length - 1) lines.push("");
+
+    if (line) {
+      lines.push({
+        text: line,
+        indent: isFirstLineOfParagraph ? firstLineIndent : 0,
+      });
+    }
+
+    if (pIndex < paragraphs.length - 1) {
+      lines.push({ text: "", indent: 0 });
+    }
   });
 
   return lines;
 }
 
+function measureBlockLines(ctx, block, maxTextWidth, sizes) {
+  const { bodySize, mainTitleSize, chapterSize, commentSize, hookSize, commentLineSize } =
+    sizes;
+  const indent = Math.round(bodySize * 2);
+
+  switch (block.type) {
+    case "main-title":
+      ctx.setFontSize(mainTitleSize);
+      return wrapText(ctx, block.text, maxTextWidth).map((line) => ({
+        ...line,
+        fontSize: mainTitleSize,
+        align: "center",
+        color: "#3d2b1f",
+        bold: true,
+        gapAfter: 16,
+      }));
+    case "chapter":
+      ctx.setFontSize(chapterSize);
+      return wrapText(ctx, block.text, maxTextWidth).map((line) => ({
+        ...line,
+        fontSize: chapterSize,
+        align: "center",
+        color: "#3d2b1f",
+        bold: true,
+        gapBefore: 24,
+        gapAfter: 12,
+      }));
+    case "comment-label":
+      ctx.setFontSize(commentSize);
+      return [
+        {
+          text: block.text,
+          indent: 0,
+          fontSize: commentSize,
+          align: "center",
+          color: "#8b6914",
+          bold: true,
+          fontFamily: COMMENT_FONT_FAMILY,
+          gapBefore: 20,
+          gapAfter: 8,
+        },
+      ];
+    case "hook":
+      ctx.setFontSize(hookSize);
+      return wrapText(ctx, block.text, maxTextWidth, indent).map((line) => ({
+        ...line,
+        fontSize: hookSize,
+        align: "left",
+        color: "#5c5048",
+        fontFamily: HERO_FONT_FAMILY,
+        gapAfter: 4,
+      }));
+    case "comment-line":
+      ctx.setFontSize(commentLineSize);
+      return wrapText(ctx, block.text, maxTextWidth, indent).map((line, index, arr) => ({
+        ...line,
+        fontSize: commentLineSize,
+        align: "left",
+        color: "#5c4a38",
+        fontFamily: COMMENT_FONT_FAMILY,
+        gapAfter: index === arr.length - 1 ? 10 : 6,
+      }));
+    case "paragraph":
+    default:
+      ctx.setFontSize(bodySize);
+      return wrapText(ctx, block.text, maxTextWidth, indent).map((line) => ({
+        ...line,
+        fontSize: bodySize,
+        align: "left",
+        color: "#3d2b1f",
+        gapAfter: 4,
+      }));
+  }
+}
+
 function exportBiographyToImage({ title, content, styleLabel, sourceLabel }) {
-  return new Promise((resolve, reject) => {
+  return Promise.all([loadHeroCalligraphyFont(), loadCommentFont()]).then(
+    () =>
+      new Promise((resolve, reject) => {
     const padding = 48;
     const width = 750;
     const maxTextWidth = width - padding * 2;
-    const titleSize = 36;
-    const metaSize = 24;
     const bodySize = 28;
-    const lineHeight = 44;
+    const mainTitleSize = 40;
+    const chapterSize = 32;
+    const commentSize = 30;
+    const hookSize = Math.round(bodySize * 1.05);
+    const commentLineSize = Math.round(bodySize * 1.1);
+    const lineHeight = 38;
+    const sizes = {
+      bodySize,
+      mainTitleSize,
+      chapterSize,
+      commentSize,
+      hookSize,
+      commentLineSize,
+    };
+
+    let blocks = parseBiographyContent(content || "");
+    const hasContentTitle = blocks.some((b) => b.type === "main-title");
+    if (!hasContentTitle && title) {
+      blocks = [{ type: "main-title", text: title }, ...blocks];
+    }
 
     const ctx = wx.createCanvasContext("exportCanvas");
-    ctx.setFontSize(titleSize);
-    const titleLines = wrapText(ctx, title || "人生传记", maxTextWidth);
-    ctx.setFontSize(bodySize);
-    let bodyLines = wrapText(ctx, content || "", maxTextWidth);
-    if (bodyLines.length > 180) {
-      bodyLines = bodyLines.slice(0, 180);
-      bodyLines[179] = `${bodyLines[179] || ""}……（内容过长已截断）`;
+    const drawLines = [];
+    let totalLines = 0;
+    const maxLines = 220;
+
+    blocks.forEach((block) => {
+      const blockLines = measureBlockLines(ctx, block, maxTextWidth, sizes);
+      blockLines.forEach((line) => {
+        if (totalLines >= maxLines) return;
+        drawLines.push(line);
+        totalLines += 1;
+      });
+    });
+
+    if (totalLines >= maxLines) {
+      const last = drawLines[drawLines.length - 1];
+      if (last) last.text = `${last.text || ""}……（内容过长已截断）`;
     }
 
     const meta = [styleLabel, sourceLabel].filter(Boolean).join(" · ");
     let height = padding;
-    height += titleLines.length * (lineHeight + 8) + 8;
-    if (meta) height += lineHeight;
-    height += 48 + bodyLines.length * lineHeight + padding;
+    height += meta ? lineHeight + 16 : 0;
+    height += 24;
+    drawLines.forEach((line) => {
+      height += (line.gapBefore || 0) + lineHeight + (line.gapAfter || 0);
+    });
+    height += padding;
     height = Math.min(Math.max(height, 800), 12000);
 
     ctx.setFillStyle("#faf6f0");
     ctx.fillRect(0, 0, width, height);
 
     let y = padding;
-    ctx.setFillStyle("#3d2b1f");
-    ctx.setFontSize(titleSize);
-    ctx.setTextAlign("left");
-    titleLines.forEach((line) => {
-      ctx.fillText(line, padding, y + titleSize);
-      y += lineHeight + 8;
-    });
 
     if (meta) {
-      y += 8;
       ctx.setFillStyle("#8b7355");
-      ctx.setFontSize(metaSize);
-      ctx.fillText(meta, padding, y + metaSize);
-      y += lineHeight;
+      ctx.setFontSize(24);
+      ctx.setTextAlign("left");
+      ctx.fillText(meta, padding, y + 24);
+      y += lineHeight + 8;
     }
 
-    y += 16;
     ctx.setStrokeStyle("#e8dfd3");
     ctx.beginPath();
     ctx.moveTo(padding, y);
     ctx.lineTo(width - padding, y);
     ctx.stroke();
-    y += 32;
+    y += 28;
 
-    ctx.setFillStyle("#3d2b1f");
-    ctx.setFontSize(bodySize);
-    bodyLines.forEach((line) => {
-      ctx.fillText(line || " ", padding, y + bodySize);
-      y += lineHeight;
+    drawLines.forEach((line) => {
+      y += line.gapBefore || 0;
+      ctx.setFillStyle(line.color || "#3d2b1f");
+      const fontSize = line.fontSize || bodySize;
+      if (line.fontFamily) {
+        ctx.font = `normal ${fontSize}px ${line.fontFamily}, sans-serif`;
+      } else {
+        ctx.setFontSize(fontSize);
+      }
+      const x =
+        line.align === "center"
+          ? width / 2
+          : padding + (line.indent || 0);
+      ctx.setTextAlign(line.align === "center" ? "center" : "left");
+      ctx.fillText(line.text || " ", x, y + fontSize);
+      ctx.setTextAlign("left");
+      y += lineHeight + (line.gapAfter || 0);
     });
 
     ctx.draw(false, () => {
@@ -99,7 +229,8 @@ function exportBiographyToImage({ title, content, styleLabel, sourceLabel }) {
         });
       }, 300);
     });
-  });
+      })
+  );
 }
 
 function saveImageToAlbum(filePath) {

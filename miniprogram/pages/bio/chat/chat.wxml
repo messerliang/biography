@@ -64,8 +64,9 @@
       >发送</view>
     </view>
 
-    <button class="generate-btn" bindtap="generateBiography" disabled="{{isTyping || recording || messages.length < 2}}">
-      讲述完毕，生成传记
-    </button>
+    <view
+      class="generate-btn {{isTyping || recording || messages.length < 2 ? 'generate-btn--disabled' : ''}}"
+      bindtap="generateBiography"
+    >讲述完毕，生成传记</view>
   </view>
 </view>

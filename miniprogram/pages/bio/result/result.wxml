@@ -23,8 +23,7 @@
 
   <scroll-view class="content-scroll" scroll-y enhanced show-scrollbar="{{false}}">
     <view class="content-box">
-      <text user-select>{{content}}</text>
-      <text class="cursor" wx:if="{{generating}}">|</text>
+      <bio-content content="{{content}}" font-size="{{30}}" show-cursor="{{generating}}" />
     </view>
   </scroll-view>
 

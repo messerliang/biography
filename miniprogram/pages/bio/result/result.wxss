@@ -101,22 +101,8 @@
   background: #fff;
   border-radius: 20rpx;
   padding: 36rpx;
-  font-size: 30rpx;
-  line-height: 2;
-  color: #3d2b1f;
   box-shadow: 0 4rpx 24rpx rgba(61, 43, 31, 0.08);
   min-height: 400rpx;
-  white-space: pre-wrap;
-}
-
-.cursor {
-  animation: blink 0.8s infinite;
-  color: #c4a574;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
 }
 
 .actions {

@@ -120,11 +120,8 @@
   max-height: 50vh;
 }
 
-.modal-text {
-  font-size: 28rpx;
-  line-height: 2;
-  color: #3d2b1f;
-  white-space: pre-wrap;
+.modal-body {
+  padding: 8rpx 0 16rpx;
 }
 
 .modal-actions {

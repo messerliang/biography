@@ -8,6 +8,7 @@ const {
   getLengthLabel,
   normalizeLength,
   getSourceLabel,
+  getGenerateErrorMessage,
 } = require("../../../utils/bio");
 const { exportAndSaveBiography } = require("../../../utils/exportBiography");
 
@@ -138,23 +139,21 @@ Page({
       this.enableLeaveConfirm();
     } catch (err) {
       console.error(err);
-      const errText = String(err?.message || err?.errMsg || err || "").toLowerCase();
-      const isTimeout =
-        err?.errCode === -504003 ||
-        errText.includes("timeout") ||
-        errText.includes("timed out") ||
-        errText.includes("time_limit_exceeded");
+      const errorMessage = getGenerateErrorMessage(err);
+      const isTimeout = errorMessage.includes("超时");
       this.setData({
         generating: false,
         generateFailed: true,
-        errorMessage: isTimeout
-          ? "生成超时（云函数上限 60 秒）。请稍后重试或精简素材。"
-          : "生成失败，请确认云函数已部署且环境变量已配置。",
+        errorMessage,
         content:
           this.data.content ||
-          (isTimeout ? "生成超时，请点击下方按钮重试。" : "生成失败，请检查云函数部署与网络后重试。"),
+          (isTimeout ? "生成超时，请点击下方按钮重试。" : "生成失败，请查看上方错误说明后重试。"),
       });
-      wx.showToast({ title: isTimeout ? "生成超时" : "生成失败", icon: "none" });
+      wx.showToast({
+        title: isTimeout ? "生成超时" : errorMessage.slice(0, 20),
+        icon: "none",
+        duration: 2800,
+      });
     }
   },
 

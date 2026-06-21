@@ -1,0 +1,49 @@
+<view class="bio-content">
+  <block wx:for="{{blocks}}" wx:key="index">
+    <view
+      wx:if="{{item.type === 'main-title'}}"
+      class="bio-main-title"
+      style="font-size: {{mainTitleSize}}rpx;"
+    >
+      <text user-select>{{item.text}}</text>
+    </view>
+
+    <view
+      wx:elif="{{item.type === 'hook'}}"
+      class="bio-hook"
+      style="font-size: {{hookFontSize}}rpx;"
+    >
+      <text user-select>　　{{item.text}}</text>
+    </view>
+
+    <view wx:elif="{{item.type === 'chapter'}}" class="bio-chapter" style="font-size: {{chapterSize}}rpx;">
+      <text user-select>{{item.text}}</text>
+    </view>
+
+    <view
+      wx:elif="{{item.type === 'comment-label'}}"
+      class="bio-comment-label"
+      style="font-size: {{commentLabelSize}}rpx;"
+    >
+      <text user-select>{{item.text}}</text>
+    </view>
+
+    <view
+      wx:elif="{{item.type === 'comment-line'}}"
+      class="bio-comment-line"
+      style="font-size: {{commentLineSize}}rpx;"
+    >
+      <text user-select>　　{{item.text}}</text>
+    </view>
+
+    <view
+      wx:elif="{{item.type === 'paragraph'}}"
+      class="bio-p"
+      style="font-size: {{fontSize}}rpx;"
+    >
+      <text user-select>　　{{item.text}}</text>
+    </view>
+  </block>
+
+  <text class="bio-cursor" wx:if="{{showCursor}}">|</text>
+</view>

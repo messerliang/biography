@@ -80,11 +80,9 @@
     </view>
 
     <scroll-view class="modal-scroll" scroll-y enhanced>
-      <text
-        user-select
-        class="modal-text"
-        style="font-size: {{fontSize}}rpx; line-height: {{lineHeight}};"
-      >{{detail.content}}</text>
+      <view class="modal-body">
+        <bio-content content="{{detail.content}}" font-size="{{fontSize}}" />
+      </view>
     </scroll-view>
 
     <view class="modal-actions">

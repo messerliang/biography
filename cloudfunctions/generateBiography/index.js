@@ -3,7 +3,7 @@ const { chatCompletion } = require("./common/deepseek");
 const { filterInput, filterOutput } = require("./common/contentFilter");
 const { checkRateLimit } = require("./common/rateLimit");
 const { validatePayload, prepareMaterial } = require("./common/material");
-const { BIOGRAPHY_SYSTEM_PROMPT, buildBiographyUserPrompt, normalizeWuxiaTone } = require("./common/prompts");
+const { buildBiographyUserPrompt, getBiographySystemPrompt, normalizeWuxiaTone } = require("./common/prompts");
 const { writeAuditLog, sha256 } = require("./common/audit");
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
@@ -45,9 +45,10 @@ exports.main = async (event) => {
   const prepared = prepareMaterial(inputCheck.text, length);
 
   try {
+    const isWuxiaLegend = style === "wuxia" && normalizeWuxiaTone(wuxiaTone) >= 67;
     const biographyRaw = await chatCompletion(
       [
-        { role: "system", content: BIOGRAPHY_SYSTEM_PROMPT },
+        { role: "system", content: getBiographySystemPrompt(style, wuxiaTone) },
         {
           role: "user",
           content: buildBiographyUserPrompt({
@@ -61,7 +62,16 @@ exports.main = async (event) => {
           }),
         },
       ],
-      { temperature: 0.68, max_tokens: length === "short" ? 900 : 2200 }
+      {
+        temperature: isWuxiaLegend ? 0.82 : 0.68,
+        max_tokens: isWuxiaLegend
+          ? length === "short"
+            ? 1000
+            : 2200
+          : length === "short"
+            ? 900
+            : 2200,
+      }
     );
 
     const outputCheck = filterOutput(biographyRaw);
