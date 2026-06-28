@@ -1,7 +1,11 @@
 const DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions";
 const DEEPSEEK_MODEL = "deepseek-chat";
 
-const SUMMARIZE_CHAR_THRESHOLD = 2800;
+const TRUNCATE_LIMITS = {
+  short: 3500,
+  normal: 5500,
+  adaptive: 7000,
+};
 
 const RATE_LIMITS = {
   biography: { perHour: 15, perDay: 60 },
@@ -14,7 +18,7 @@ const RATE_LIMIT_COLLECTION = "bio_rate_limit";
 module.exports = {
   DEEPSEEK_API_URL,
   DEEPSEEK_MODEL,
-  SUMMARIZE_CHAR_THRESHOLD,
+  TRUNCATE_LIMITS,
   RATE_LIMITS,
   AUDIT_COLLECTION,
   RATE_LIMIT_COLLECTION,

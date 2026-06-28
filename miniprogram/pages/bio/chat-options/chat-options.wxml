@@ -2,10 +2,6 @@
   <view class="header">
     <view class="header-title">确认生成设置</view>
     <view class="header-desc">选择叙述人称、篇幅与文笔风格，即可生成传记</view>
-    <view class="summary" wx:if="{{selectedPerson === 'third' && subjectName}}" bindtap="editSubjectName">
-      <text class="summary-label">主人公称呼</text>
-      <text class="summary-value">{{subjectName}}（点击修改）</text>
-    </view>
     <view class="summary">
       <text class="summary-label">访谈轮次</text>
       <text class="summary-value">用户 {{userMsgCount}} 条 · 共 {{messageCount}} 条</text>
@@ -15,16 +11,28 @@
   <view class="person-section">
     <view class="section-title">传记人称</view>
     <view class="option-list">
-      <view
-        class="option-item {{selectedPerson === item.key ? 'active' : ''}}"
-        wx:for="{{personOptions}}"
-        wx:key="key"
-        bindtap="selectPerson"
-        data-person="{{item.key}}"
-      >
-        <view class="option-label">{{item.label}}</view>
-        <view class="option-desc">{{item.desc}}</view>
-      </view>
+      <block wx:for="{{personOptions}}" wx:key="key">
+        <view
+          class="option-item {{selectedPerson === item.key ? 'active' : ''}}{{item.key === 'third' && selectedPerson === 'third' ? ' option-item--with-field' : ''}}"
+          bindtap="selectPerson"
+          data-person="{{item.key}}"
+        >
+          <view class="option-label">{{item.label}}</view>
+          <view class="option-desc">{{item.desc}}</view>
+        </view>
+        <view class="subject-name-wrap" wx:if="{{item.key === 'third' && selectedPerson === 'third'}}">
+          <input
+            class="subject-name-input"
+            type="text"
+            value="{{subjectName}}"
+            placeholder="主人公称呼，如张先生、母亲"
+            placeholder-class="subject-name-placeholder"
+            maxlength="20"
+            bindinput="onSubjectNameInput"
+            confirm-type="done"
+          />
+        </view>
+      </block>
     </view>
   </view>
 
@@ -70,11 +78,17 @@
             <view class="wuxia-tone-inline" wx:if="{{styleItem.key === 'wuxia' && selectedStyle === 'wuxia'}}">
               <wuxia-tone-slider value="{{wuxiaTone}}" bind:change="onWuxiaToneChange" />
             </view>
+            <view class="yanqing-tone-inline" wx:if="{{styleItem.key === 'yanqing' && selectedStyle === 'yanqing'}}">
+              <yanqing-tone-slider value="{{yanqingTone}}" bind:change="onYanqingToneChange" />
+            </view>
           </block>
         </block>
       </view>
       <view class="wuxia-tone-inline wuxia-tone-folded" wx:if="{{selectedStyle === 'wuxia' && !showStylePicker}}">
         <wuxia-tone-slider value="{{wuxiaTone}}" bind:change="onWuxiaToneChange" />
+      </view>
+      <view class="yanqing-tone-inline yanqing-tone-folded" wx:if="{{selectedStyle === 'yanqing' && !showStylePicker}}">
+        <yanqing-tone-slider value="{{yanqingTone}}" bind:change="onYanqingToneChange" />
       </view>
     </view>
   </view>

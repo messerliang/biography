@@ -23,7 +23,7 @@ function postJson(url, headers, body) {
           "Content-Length": Buffer.byteLength(payload),
           ...headers,
         },
-        timeout: 110000,
+        timeout: 55000,
       },
       (res) => {
         const chunks = [];

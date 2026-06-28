@@ -1,28 +1,45 @@
-<view class="wuxia-tone">
-  <view class="wuxia-tone-title">江湖浓度</view>
-  <view class="wuxia-tone-labels">
-    <view
-      wx:for="{{levelMeta}}"
-      wx:key="tone"
-      wx:for-index="idx"
-      class="wuxia-tone-label-col {{level === idx ? 'active' : ''}}"
-    >
-      <text class="wuxia-tone-label">{{item.label}}</text>
-      <text class="wuxia-tone-summary">{{item.summary}}</text>
+<view class="wuxia-tone-frame">
+  <view class="wuxia-frame-corner wuxia-frame-corner-tl"></view>
+  <view class="wuxia-frame-corner wuxia-frame-corner-tr"></view>
+  <view class="wuxia-frame-corner wuxia-frame-corner-bl"></view>
+  <view class="wuxia-frame-corner wuxia-frame-corner-br"></view>
+  <view class="wuxia-frame-edge wuxia-frame-edge-top"></view>
+  <view class="wuxia-frame-edge wuxia-frame-edge-bottom"></view>
+  <view class="wuxia-frame-edge wuxia-frame-edge-left"></view>
+  <view class="wuxia-frame-edge wuxia-frame-edge-right"></view>
+  <view class="wuxia-tone">
+    <view class="wuxia-tone-title">江湖浓度</view>
+    <view class="wuxia-tone-labels">
+      <view
+        wx:for="{{levelMeta}}"
+        wx:key="tone"
+        wx:for-index="idx"
+        class="wuxia-tone-label-col {{level === idx ? 'active' : ''}}"
+        bindtap="selectLevel"
+        data-level="{{idx}}"
+      >
+        <text class="wuxia-tone-label">{{item.label}}</text>
+        <text class="wuxia-tone-summary">{{item.summary}}</text>
+      </view>
     </view>
+    <view
+      class="wuxia-tone-track"
+      catchtouchstart="onTrackTouchStart"
+      catchtouchmove="onTrackTouchMove"
+      catchtouchend="onTrackTouchEnd"
+      catchtouchcancel="onTrackTouchEnd"
+    >
+      <view class="wuxia-tone-track-line"></view>
+      <view class="wuxia-tone-track-fill {{dragging ? 'is-dragging' : ''}}" style="width: {{thumbPercent}}%;"></view>
+      <view
+        wx:for="{{levelMeta}}"
+        wx:key="tone"
+        wx:for-index="idx"
+        class="wuxia-tone-track-node {{level === idx ? 'active' : ''}}"
+        style="left: {{idx * 50}}%;"
+      ></view>
+      <view class="wuxia-tone-track-thumb {{dragging ? 'is-dragging' : ''}}" style="left: {{thumbPercent}}%;"></view>
+    </view>
+    <view class="wuxia-tone-hint">{{hint}}</view>
   </view>
-  <slider
-    class="wuxia-tone-slider"
-    min="0"
-    max="2"
-    step="1"
-    value="{{level}}"
-    activeColor="#8b6914"
-    backgroundColor="#e8dfd3"
-    block-color="#c4a574"
-    block-size="24"
-    bindchanging="onChanging"
-    bindchange="onChange"
-  />
-  <view class="wuxia-tone-hint">{{hint}}</view>
 </view>

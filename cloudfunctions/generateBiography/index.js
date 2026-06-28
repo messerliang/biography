@@ -3,12 +3,17 @@ const { chatCompletion } = require("./common/deepseek");
 const { filterInput, filterOutput } = require("./common/contentFilter");
 const { checkRateLimit } = require("./common/rateLimit");
 const { validatePayload, prepareMaterial } = require("./common/material");
-const { buildBiographyUserPrompt, getBiographySystemPrompt, normalizeWuxiaTone } = require("./common/prompts");
+const { buildBiographyUserPrompt, getBiographySystemPrompt, normalizeWuxiaTone, normalizeYanqingTone, isYanqingMelodrama, isFeaturedBiographyStyle } = require("./common/prompts");
 const { writeAuditLog, sha256 } = require("./common/audit");
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 
-const VALID_STYLES = ["narrative", "literary", "wuxia", "classical", "qiongyao"];
+const VALID_STYLES = ["narrative", "literary", "wuxia", "classical", "yanqing", "qiongyao", "xuanhuan"];
+
+function resolveStyle(raw) {
+  if (raw === "qiongyao") return "yanqing";
+  return VALID_STYLES.includes(raw) ? raw : "narrative";
+}
 const VALID_LENGTHS = ["short", "normal", "adaptive"];
 const VALID_PERSONS = ["first", "third"];
 
@@ -27,10 +32,11 @@ exports.main = async (event) => {
 
   const source = event?.source;
   const data = event?.data;
-  const style = VALID_STYLES.includes(event?.style) ? event.style : "narrative";
+  const style = resolveStyle(event?.style);
   const length = VALID_LENGTHS.includes(event?.length) ? event.length : "normal";
   const person = VALID_PERSONS.includes(event?.person) ? event.person : "third";
   const wuxiaTone = style === "wuxia" ? normalizeWuxiaTone(event?.wuxiaTone) : undefined;
+  const yanqingTone = style === "yanqing" ? normalizeYanqingTone(event?.yanqingTone) : undefined;
 
   const validation = validatePayload(source, data);
   if (!validation.ok) {
@@ -45,10 +51,13 @@ exports.main = async (event) => {
   const prepared = prepareMaterial(inputCheck.text, length);
 
   try {
-    const isWuxiaLegend = style === "wuxia" && normalizeWuxiaTone(wuxiaTone) >= 67;
+    const isFeaturedMode = isFeaturedBiographyStyle(style, wuxiaTone, yanqingTone);
+    const isXuanhuan = style === "xuanhuan";
+    const isClassical = style === "classical";
+    const isYanqingMelodramaMode = style === "yanqing" && isYanqingMelodrama(yanqingTone);
     const biographyRaw = await chatCompletion(
       [
-        { role: "system", content: getBiographySystemPrompt(style, wuxiaTone) },
+        { role: "system", content: getBiographySystemPrompt(style, wuxiaTone, yanqingTone) },
         {
           role: "user",
           content: buildBiographyUserPrompt({
@@ -59,12 +68,21 @@ exports.main = async (event) => {
             person,
             truncated: prepared.truncated,
             wuxiaTone,
+            yanqingTone,
           }),
         },
       ],
       {
-        temperature: isWuxiaLegend ? 0.82 : 0.68,
-        max_tokens: isWuxiaLegend
+        temperature: isXuanhuan
+          ? 0.86
+          : isClassical
+            ? 0.75
+            : isYanqingMelodramaMode
+              ? 0.88
+              : isFeaturedMode
+                ? 0.82
+                : 0.68,
+        max_tokens: isFeaturedMode
           ? length === "short"
             ? 1000
             : 2200
@@ -97,6 +115,7 @@ exports.main = async (event) => {
         person,
         truncated: prepared.truncated,
         wuxiaTone: style === "wuxia" ? wuxiaTone : undefined,
+        yanqingTone: style === "yanqing" ? yanqingTone : undefined,
         charCount: outputCheck.text.length,
       },
     };

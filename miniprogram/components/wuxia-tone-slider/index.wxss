@@ -1,12 +1,250 @@
+.wuxia-tone-frame {
+  position: relative;
+  padding: 28rpx 32rpx 24rpx;
+  background: linear-gradient(145deg, rgba(255, 252, 247, 0.92) 0%, rgba(245, 239, 230, 0.55) 100%);
+}
+
+.wuxia-frame-corner {
+  position: absolute;
+  width: 52rpx;
+  height: 52rpx;
+  pointer-events: none;
+}
+
+.wuxia-frame-corner::before,
+.wuxia-frame-corner::after {
+  content: "";
+  position: absolute;
+  border-radius: 1rpx;
+}
+
+.wuxia-frame-corner::before {
+  width: 76rpx;
+  height: 6rpx;
+  background: linear-gradient(90deg, #b8892e 0%, rgba(184, 137, 46, 0.06) 100%);
+}
+
+.wuxia-frame-corner::after {
+  width: 6rpx;
+  height: 76rpx;
+  background: linear-gradient(180deg, #b8892e 0%, rgba(184, 137, 46, 0.06) 100%);
+}
+
+/* 80° 内角：两角臂各内收 5° */
+.wuxia-frame-corner-tl {
+  top: 0;
+  left: 0;
+}
+
+.wuxia-frame-corner-tl::before {
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  transform: rotate(-5deg);
+}
+
+.wuxia-frame-corner-tl::after {
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  transform: rotate(5deg);
+}
+
+.wuxia-frame-corner-tr {
+  top: 0;
+  right: 0;
+}
+
+.wuxia-frame-corner-tr::before {
+  top: 0;
+  right: 0;
+  transform-origin: 100% 0;
+  transform: rotate(5deg);
+  background: linear-gradient(270deg, #b8892e 0%, rgba(184, 137, 46, 0.06) 100%);
+}
+
+.wuxia-frame-corner-tr::after {
+  top: 0;
+  right: 0;
+  transform-origin: 100% 0;
+  transform: rotate(-5deg);
+  background: linear-gradient(180deg, #b8892e 0%, rgba(184, 137, 46, 0.06) 100%);
+}
+
+.wuxia-frame-corner-bl {
+  bottom: 0;
+  left: 0;
+}
+
+.wuxia-frame-corner-bl::before {
+  bottom: 0;
+  left: 0;
+  transform-origin: 0 100%;
+  transform: rotate(5deg);
+  background: linear-gradient(90deg, #b8892e 0%, rgba(184, 137, 46, 0.06) 100%);
+}
+
+.wuxia-frame-corner-bl::after {
+  bottom: 0;
+  left: 0;
+  transform-origin: 0 100%;
+  transform: rotate(-5deg);
+  background: linear-gradient(0deg, #b8892e 0%, rgba(184, 137, 46, 0.06) 100%);
+}
+
+.wuxia-frame-corner-br {
+  bottom: 0;
+  right: 0;
+}
+
+.wuxia-frame-corner-br::before {
+  bottom: 0;
+  right: 0;
+  transform-origin: 100% 100%;
+  transform: rotate(-5deg);
+  background: linear-gradient(270deg, #b8892e 0%, rgba(184, 137, 46, 0.06) 100%);
+}
+
+.wuxia-frame-corner-br::after {
+  bottom: 0;
+  right: 0;
+  transform-origin: 100% 100%;
+  transform: rotate(5deg);
+  background: linear-gradient(0deg, #b8892e 0%, rgba(184, 137, 46, 0.06) 100%);
+}
+
+.wuxia-frame-edge {
+  position: absolute;
+  pointer-events: none;
+}
+
+.wuxia-frame-edge-top,
+.wuxia-frame-edge-bottom {
+  left: 58rpx;
+  right: 58rpx;
+  height: 2rpx;
+  background: linear-gradient(
+    90deg,
+    rgba(184, 137, 46, 0.42) 0%,
+    rgba(196, 165, 116, 0.1) 50%,
+    rgba(184, 137, 46, 0.42) 100%
+  );
+}
+
+.wuxia-frame-edge-top {
+  top: 3rpx;
+}
+
+.wuxia-frame-edge-bottom {
+  bottom: 3rpx;
+}
+
+.wuxia-frame-edge-left,
+.wuxia-frame-edge-right {
+  top: 58rpx;
+  bottom: 58rpx;
+  width: 2rpx;
+  background: linear-gradient(
+    180deg,
+    rgba(184, 137, 46, 0.42) 0%,
+    rgba(196, 165, 116, 0.1) 50%,
+    rgba(184, 137, 46, 0.42) 100%
+  );
+}
+
+.wuxia-frame-edge-left {
+  left: 3rpx;
+}
+
+.wuxia-frame-edge-right {
+  right: 3rpx;
+}
+
 .wuxia-tone {
-  padding: 20rpx 0 4rpx;
+  position: relative;
+}
+
+.wuxia-tone-track {
+  position: relative;
+  height: 56rpx;
+  margin: 8rpx 0 4rpx;
+  padding: 4rpx 0;
+  box-sizing: border-box;
+}
+
+.wuxia-tone-track-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 6rpx;
+  margin-top: -3rpx;
+  background: #e8dfd3;
+  border-radius: 3rpx;
+  pointer-events: none;
+}
+
+.wuxia-tone-track-fill {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 6rpx;
+  margin-top: -3rpx;
+  background: linear-gradient(90deg, #c4a574 0%, #8b6914 100%);
+  border-radius: 3rpx;
+  transition: width 0.2s ease;
+  pointer-events: none;
+}
+
+.wuxia-tone-track-node {
+  position: absolute;
+  top: 50%;
+  width: 16rpx;
+  height: 16rpx;
+  margin: -8rpx 0 0 -8rpx;
+  background: #fff;
+  border: 3rpx solid #d4c4a8;
+  border-radius: 50%;
+  box-sizing: border-box;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.wuxia-tone-track-node.active {
+  border-color: #8b6914;
+  background: #f5efe6;
+}
+
+.wuxia-tone-track-thumb {
+  position: absolute;
+  top: 50%;
+  width: 28rpx;
+  height: 28rpx;
+  margin: -14rpx 0 0 -14rpx;
+  background: linear-gradient(135deg, #d4b896 0%, #8b6914 100%);
+  border: 3rpx solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 2rpx 8rpx rgba(139, 105, 20, 0.28);
+  box-sizing: border-box;
+  z-index: 3;
+  transition: left 0.2s ease;
+  pointer-events: none;
+}
+
+.wuxia-tone-track-thumb.is-dragging {
+  transition: none;
+}
+
+.wuxia-tone-track-fill.is-dragging {
+  transition: none;
 }
 
 .wuxia-tone-title {
   font-size: 24rpx;
   font-weight: 600;
-  color: #3d2b1f;
+  color: #8b6914;
   margin-bottom: 12rpx;
+  letter-spacing: 2rpx;
 }
 
 .wuxia-tone-labels {
@@ -50,10 +288,6 @@
 
 .wuxia-tone-label-col.active .wuxia-tone-summary {
   color: #a89580;
-}
-
-.wuxia-tone-slider {
-  margin: 0;
 }
 
 .wuxia-tone-hint {

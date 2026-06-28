@@ -17,6 +17,8 @@ const {
   navigateToGenerate,
   normalizeWuxiaTone,
   DEFAULT_WUXIA_TONE,
+  normalizeYanqingTone,
+  DEFAULT_YANQING_TONE,
 } = require("../../../utils/bio");
 
 Page({
@@ -35,6 +37,7 @@ Page({
     showStylePicker: false,
     showLengthPicker: false,
     wuxiaTone: DEFAULT_WUXIA_TONE,
+    yanqingTone: DEFAULT_YANQING_TONE,
     nodes: [],
     manualSort: false,
   },
@@ -60,10 +63,11 @@ Page({
       selectedPerson: person,
       personLabel: getPersonLabel(person),
       selectedStyle: style,
-      styleLabel: getStyleLabel(style, draft.wuxiaTone),
+      styleLabel: getStyleLabel(style, { wuxiaTone: draft.wuxiaTone, yanqingTone: draft.yanqingTone }),
       selectedLength: length,
       lengthLabel: getLengthLabel(length),
       wuxiaTone: normalizeWuxiaTone(draft.wuxiaTone),
+      yanqingTone: normalizeYanqingTone(draft.yanqingTone),
     });
   },
 
@@ -75,6 +79,7 @@ Page({
       selectedStyle: this.data.selectedStyle,
       selectedLength: this.data.selectedLength,
       wuxiaTone: this.data.wuxiaTone,
+      yanqingTone: this.data.yanqingTone,
       manualSort: this.data.manualSort,
     });
   },
@@ -109,8 +114,8 @@ Page({
     const style = e.currentTarget.dataset.style;
     this.setData({
       selectedStyle: style,
-      styleLabel: getStyleLabel(style, this.data.wuxiaTone),
-      showStylePicker: style === "wuxia" ? true : this.data.showStylePicker,
+      styleLabel: getStyleLabel(style, { wuxiaTone: this.data.wuxiaTone, yanqingTone: this.data.yanqingTone }),
+      showStylePicker: style === "wuxia" || style === "yanqing" ? true : this.data.showStylePicker,
     });
     this.persistDraft();
   },
@@ -119,7 +124,16 @@ Page({
     const wuxiaTone = normalizeWuxiaTone(e.detail.value);
     this.setData({
       wuxiaTone,
-      styleLabel: getStyleLabel(this.data.selectedStyle, wuxiaTone),
+      styleLabel: getStyleLabel(this.data.selectedStyle, { wuxiaTone, yanqingTone: this.data.yanqingTone }),
+    });
+    this.persistDraft();
+  },
+
+  onYanqingToneChange(e) {
+    const yanqingTone = normalizeYanqingTone(e.detail.value);
+    this.setData({
+      yanqingTone,
+      styleLabel: getStyleLabel(this.data.selectedStyle, { wuxiaTone: this.data.wuxiaTone, yanqingTone }),
     });
     this.persistDraft();
   },
@@ -142,6 +156,7 @@ Page({
         length: this.data.selectedLength,
         person: this.data.selectedPerson,
         wuxiaTone: this.data.selectedStyle === "wuxia" ? this.data.wuxiaTone : undefined,
+        yanqingTone: this.data.selectedStyle === "yanqing" ? this.data.yanqingTone : undefined,
         data: {
           nodes: nodesToSend,
           manualSort: this.data.manualSort,

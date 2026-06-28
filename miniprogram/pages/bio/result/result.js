@@ -60,6 +60,7 @@ Page({
       const style = params.style || "narrative";
       const length = normalizeLength(params.length);
       const wuxiaTone = params.wuxiaTone;
+      const yanqingTone = params.yanqingTone;
       const title =
         params.source === "form" && params.data?.name
           ? `${params.data.name}的人生传记`
@@ -81,7 +82,7 @@ Page({
         source: params.source,
         style,
         length,
-        styleLabel: getStyleLabel(style, wuxiaTone),
+        styleLabel: getStyleLabel(style, { wuxiaTone, yanqingTone }),
         lengthLabel: getLengthLabel(length),
         sourceLabel: getSourceLabel(params.source),
         rawData: params.data,
@@ -128,6 +129,7 @@ Page({
         length: params.length || "normal",
         person: params.person || "third",
         wuxiaTone: params.wuxiaTone,
+        yanqingTone: params.yanqingTone,
         onStatus: (statusText) => {
           this.setData({ statusText });
         },
@@ -209,6 +211,7 @@ Page({
       length: this.data.length,
       source: this.data.source,
       wuxiaTone: this.generateParams?.wuxiaTone,
+      yanqingTone: this.generateParams?.yanqingTone,
     });
 
     if (this.data.source === "timeline") {

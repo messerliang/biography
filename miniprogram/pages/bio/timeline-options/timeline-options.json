@@ -1,6 +1,7 @@
 {
   "navigationBarTitleText": "生成设置",
   "usingComponents": {
-    "wuxia-tone-slider": "/components/wuxia-tone-slider/index"
+    "wuxia-tone-slider": "/components/wuxia-tone-slider/index",
+    "yanqing-tone-slider": "/components/yanqing-tone-slider/index"
   }
 }

@@ -27,9 +27,14 @@ const SPECIAL_STYLES = {
     desc: "典雅文言，传承古典韵味",
     group: "special",
   },
-  qiongyao: {
-    label: "琼瑶体",
-    desc: "细腻婉约，情真意切",
+  yanqing: {
+    label: "言情风",
+    desc: "正常 / 虐恋深情，两档可选",
+    group: "special",
+  },
+  xuanhuan: {
+    label: "玄幻文学",
+    desc: "修仙意境，以玄幻笔法写真实人生",
     group: "special",
   },
 };
@@ -154,19 +159,40 @@ function getStyleInstruction(style) {
       "采用武侠笔法：适度写意=纪实为主；均衡=章回武侠、事实严谨；传奇江湖=娱乐向、可适度夸张渲染。",
     classical:
       "采用文言文风格撰写，文辞典雅凝练，可适度穿插白话注释或关键词，确保现代读者能读懂大意，不可歪曲事实。",
-    qiongyao:
-      "采用琼瑶式言情文笔，细腻婉约、情真意切，注重情感描写与内心独白，文风柔美但不俗套，不可歪曲事实。",
+    yanqing:
+      "采用言情风文笔，细腻婉约、以情感与关系为骨，注重对话潜台词与内心活动，文风柔美但不俗套，不可歪曲事实。",
+    xuanhuan:
+      "采用玄幻文学笔法：人生阶段可喻为修行境界与试炼，意境开阔、气象万千；须严格基于素材，不得虚构宗门、斗法或网文式升级剧情。",
   };
   return map[normalized] || map.narrative;
 }
 
 function normalizeWritingStyle(style) {
   if (style === "timeline") return "narrative";
+  if (style === "qiongyao") return "yanqing";
   return STYLES[style] ? style : "narrative";
 }
 
 const WUXIA_TONE_LEVELS = [20, 50, 80];
 const DEFAULT_WUXIA_TONE = WUXIA_TONE_LEVELS[0];
+
+const YANQING_TONE_LEVELS = [20, 80];
+const DEFAULT_YANQING_TONE = YANQING_TONE_LEVELS[0];
+
+const YANQING_TONE_META = [
+  {
+    tone: 20,
+    label: "正常",
+    summary: "真情实感",
+    hint: "严格基于素材，细腻对话与内心活动，把人生写成可共情的故事。",
+  },
+  {
+    tone: 80,
+    label: "虐恋深情",
+    summary: "娱乐夸张",
+    hint: "很虐很深情，可适度虚构渲染氛围与对白，像短剧一样夸张好玩，但主线仍是这个人的故事。",
+  },
+];
 
 const WUXIA_TONE_META = [
   {
@@ -188,6 +214,43 @@ const WUXIA_TONE_META = [
     hint: "专属江湖人物志。开篇抓人、对话生动、章节个性化，适合分享。",
   },
 ];
+
+function getYanqingToneMetaForUI() {
+  return YANQING_TONE_META.map((item) => ({ ...item }));
+}
+
+function getYanqingToneMeta(tone) {
+  const idx = yanqingToneToLevel(tone);
+  return YANQING_TONE_META[idx] || YANQING_TONE_META[0];
+}
+
+function normalizeYanqingTone(tone) {
+  const n = Number(tone);
+  if (!Number.isFinite(n)) return DEFAULT_YANQING_TONE;
+  return YANQING_TONE_LEVELS.reduce(
+    (best, level) => (Math.abs(level - n) < Math.abs(best - n) ? level : best),
+    DEFAULT_YANQING_TONE
+  );
+}
+
+function yanqingToneToLevel(tone) {
+  const t = normalizeYanqingTone(tone);
+  const idx = YANQING_TONE_LEVELS.indexOf(t);
+  return idx >= 0 ? idx : 0;
+}
+
+function yanqingLevelToTone(level) {
+  const idx = Math.min(YANQING_TONE_LEVELS.length - 1, Math.max(0, Math.round(Number(level) || 0)));
+  return YANQING_TONE_LEVELS[idx];
+}
+
+function getYanqingToneLabel(tone) {
+  return getYanqingToneMeta(tone).label;
+}
+
+function getYanqingToneHint(tone) {
+  return getYanqingToneMeta(tone).hint;
+}
 
 function getWuxiaToneMetaForUI() {
   return WUXIA_TONE_META.map((item) => ({ ...item }));
@@ -234,10 +297,22 @@ function getStyleGroupsForUI() {
   }));
 }
 
-function getStyleLabel(styleKey, wuxiaTone) {
-  const base = STYLES[styleKey]?.label || LEGACY_STYLE_LABELS[styleKey] || STYLES.narrative.label;
-  if (styleKey === "wuxia" && wuxiaTone !== undefined && wuxiaTone !== null) {
+function getStyleLabel(styleKey, toneOpts) {
+  const style = normalizeWritingStyle(styleKey);
+  const base = STYLES[style]?.label || LEGACY_STYLE_LABELS[style] || STYLES.narrative.label;
+  let wuxiaTone;
+  let yanqingTone;
+  if (toneOpts && typeof toneOpts === "object") {
+    wuxiaTone = toneOpts.wuxiaTone;
+    yanqingTone = toneOpts.yanqingTone;
+  } else {
+    wuxiaTone = toneOpts;
+  }
+  if (style === "wuxia" && wuxiaTone !== undefined && wuxiaTone !== null) {
     return `${base} · ${getWuxiaToneLabel(wuxiaTone)}`;
+  }
+  if (style === "yanqing" && yanqingTone !== undefined && yanqingTone !== null) {
+    return `${base} · ${getYanqingToneLabel(yanqingTone)}`;
   }
   return base;
 }
@@ -635,6 +710,7 @@ async function streamBiography({
   length = "normal",
   person = "third",
   wuxiaTone,
+  yanqingTone,
   onChunk,
   onStatus,
   retryCount = 1,
@@ -644,6 +720,8 @@ async function streamBiography({
   const normalizedStyle = normalizeWritingStyle(style);
   const normalizedWuxiaTone =
     normalizedStyle === "wuxia" ? normalizeWuxiaTone(wuxiaTone) : undefined;
+  const normalizedYanqingTone =
+    normalizedStyle === "yanqing" ? normalizeYanqingTone(yanqingTone) : undefined;
   if (onStatus) onStatus("正在安全校验素材…");
   if (onChunk) onChunk("");
 
@@ -658,6 +736,9 @@ async function streamBiography({
     };
     if (normalizedStyle === "wuxia") {
       payload.wuxiaTone = normalizedWuxiaTone;
+    }
+    if (normalizedStyle === "yanqing") {
+      payload.yanqingTone = normalizedYanqingTone;
     }
     const result = await callCloudFunction("generateBiography", payload, { timeout: 90000 });
 
@@ -680,6 +761,7 @@ async function streamBiography({
         length: normalizedLength,
         person: normalizedPerson,
         wuxiaTone: normalizedWuxiaTone,
+        yanqingTone: normalizedYanqingTone,
         onChunk,
         onStatus,
         retryCount: retryCount - 1,
@@ -722,6 +804,12 @@ function saveBiography(record) {
   };
   if (item.style === "wuxia" && record.wuxiaTone !== undefined) {
     item.wuxiaTone = normalizeWuxiaTone(record.wuxiaTone);
+  }
+  if (normalizeWritingStyle(item.style) === "yanqing" && record.yanqingTone !== undefined) {
+    item.style = "yanqing";
+    item.yanqingTone = normalizeYanqingTone(record.yanqingTone);
+  } else if (item.style === "qiongyao") {
+    item.style = "yanqing";
   }
   list.unshift(item);
   wx.setStorageSync(STORAGE_KEY, list.slice(0, 50));
@@ -796,6 +884,7 @@ function getDefaultChatDraft() {
     selectedStyle: "narrative",
     selectedLength: "normal",
     wuxiaTone: DEFAULT_WUXIA_TONE,
+    yanqingTone: DEFAULT_YANQING_TONE,
   };
 }
 
@@ -818,6 +907,7 @@ function getDefaultTimelineDraft() {
     selectedStyle: "narrative",
     selectedLength: "normal",
     wuxiaTone: DEFAULT_WUXIA_TONE,
+    yanqingTone: DEFAULT_YANQING_TONE,
     manualSort: false,
   };
 }
@@ -843,6 +933,7 @@ function resolveTimelineDraft(stored) {
       selectedStyle: normalizeWritingStyle(stored?.selectedStyle),
       selectedLength: normalizeLength(stored?.selectedLength),
       wuxiaTone: normalizeWuxiaTone(stored?.wuxiaTone),
+      yanqingTone: normalizeYanqingTone(stored?.yanqingTone),
     };
   }
   return {
@@ -852,6 +943,7 @@ function resolveTimelineDraft(stored) {
     selectedStyle: normalizeWritingStyle(stored.selectedStyle),
     selectedLength: normalizeLength(stored.selectedLength),
     wuxiaTone: normalizeWuxiaTone(stored?.wuxiaTone),
+    yanqingTone: normalizeYanqingTone(stored?.yanqingTone),
     manualSort: !!stored.manualSort,
   };
 }
@@ -901,6 +993,16 @@ module.exports = {
   wuxiaLevelToTone,
   getWuxiaToneLabel,
   getWuxiaToneHint,
+  DEFAULT_YANQING_TONE,
+  YANQING_TONE_LEVELS,
+  YANQING_TONE_META,
+  getYanqingToneMetaForUI,
+  getYanqingToneMeta,
+  normalizeYanqingTone,
+  yanqingToneToLevel,
+  yanqingLevelToTone,
+  getYanqingToneLabel,
+  getYanqingToneHint,
   getSourceLabel,
   getSampleBiographies,
   getChatMaterialStats,

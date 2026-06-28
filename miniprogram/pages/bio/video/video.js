@@ -5,6 +5,8 @@ const {
   navigateToGenerate,
   normalizeWuxiaTone,
   DEFAULT_WUXIA_TONE,
+  normalizeYanqingTone,
+  DEFAULT_YANQING_TONE,
 } = require("../../../utils/bio");
 const { chooseVideo, chooseAudio, parseVideo, parseAudio } = require("../../../utils/videoParser");
 
@@ -37,6 +39,7 @@ Page({
     selectedStyle: "narrative",
     selectedLength: "normal",
     wuxiaTone: DEFAULT_WUXIA_TONE,
+    yanqingTone: DEFAULT_YANQING_TONE,
     styleGroups: getStyleGroupsForUI(),
     lengthOptions: getLengthOptionsForUI(),
   },
@@ -102,6 +105,10 @@ Page({
 
   onWuxiaToneChange(e) {
     this.setData({ wuxiaTone: normalizeWuxiaTone(e.detail.value) });
+  },
+
+  onYanqingToneChange(e) {
+    this.setData({ yanqingTone: normalizeYanqingTone(e.detail.value) });
   },
 
   selectLength(e) {
@@ -185,6 +192,7 @@ Page({
       style: this.data.selectedStyle,
       length: this.data.selectedLength,
       wuxiaTone: this.data.selectedStyle === "wuxia" ? this.data.wuxiaTone : undefined,
+      yanqingTone: this.data.selectedStyle === "yanqing" ? this.data.yanqingTone : undefined,
       data: { text },
     });
   },

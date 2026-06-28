@@ -8,6 +8,40 @@ function stripInlineMarkdown(text) {
 const LEADING_INDENT_RE =
   /^[\s\u00a0\u1680\u2000-\u200a\u202f\u205f\u3000\ufeff]+/;
 
+const COMMENT_LABELS = ["江湖评语", "情笺结语", "道评", "太史公曰"];
+
+function escapeRegExp(text) {
+  return String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function isCommentSectionHeading(trimmed, label) {
+  const escaped = escapeRegExp(label);
+  return (
+    new RegExp(`^(\\*\\*)?${escaped}(\\*\\*)?$`).test(trimmed) ||
+    new RegExp(`^##\\s*${escaped}\\s*$`).test(trimmed) ||
+    new RegExp(`^(\\*\\*)?${escaped}(\\*\\*)?[：:]\\s*$`).test(trimmed)
+  );
+}
+
+function parseCommentSectionLine(trimmed, label) {
+  const escaped = escapeRegExp(label);
+  const match = trimmed.match(new RegExp(`^(\\*\\*)?${escaped}(\\*\\*)?[：:]\\s*(.*)$`));
+  if (!match) return null;
+  return { label, rest: (match[3] || "").trim() };
+}
+
+function matchCommentSection(trimmed) {
+  for (let i = 0; i < COMMENT_LABELS.length; i += 1) {
+    const label = COMMENT_LABELS[i];
+    if (isCommentSectionHeading(trimmed, label)) {
+      return { label, rest: "" };
+    }
+    const parsed = parseCommentSectionLine(trimmed, label);
+    if (parsed) return parsed;
+  }
+  return null;
+}
+
 function stripLineLeadingIndent(line) {
   return String(line || "").replace(LEADING_INDENT_RE, "");
 }
@@ -26,21 +60,8 @@ function isMainTitleLine(trimmed) {
 }
 
 function isChapterLine(trimmed) {
-  return /^##(?!#)\s*/.test(trimmed) && !/^##\s*江湖评语\s*$/.test(trimmed);
-}
-
-function isCommentLabelOnly(trimmed) {
-  return (
-    /^(\*\*)?江湖评语(\*\*)?$/.test(trimmed) ||
-    /^##\s*江湖评语\s*$/.test(trimmed) ||
-    /^(\*\*)?江湖评语(\*\*)?[：:]\s*$/.test(trimmed)
-  );
-}
-
-function parseCommentLabelLine(trimmed) {
-  const match = trimmed.match(/^(\*\*)?江湖评语(\*\*)?[：:]\s*(.*)$/);
-  if (!match) return null;
-  return { rest: (match[3] || "").trim() };
+  if (!/^##(?!#)\s*/.test(trimmed)) return false;
+  return !COMMENT_LABELS.some((label) => isCommentSectionHeading(trimmed, label));
 }
 
 function stripHeadingMarks(line, level) {
@@ -48,7 +69,7 @@ function stripHeadingMarks(line, level) {
   return line.replace(/^#(?!#)\s*/, "");
 }
 
-/** 江湖评语拆行：尊重 AI 换行，仅在整句末尾断行，不在逗号处硬拆 */
+/** 结语拆行：尊重 AI 换行，仅在整句末尾断行，不在逗号处硬拆 */
 function cleanPoetryLine(line) {
   return String(line || "").trim();
 }
@@ -145,24 +166,15 @@ function parseBiographyContent(raw) {
       continue;
     }
 
-    if (isCommentLabelOnly(trimmed)) {
+    const commentSection = matchCommentSection(trimmed);
+    if (commentSection) {
       flushParagraph();
       flushHook();
       afterMainTitle = false;
       inCommentSection = true;
-      blocks.push({ type: "comment-label", text: "江湖评语" });
-      continue;
-    }
-
-    const commentLine = parseCommentLabelLine(trimmed);
-    if (commentLine) {
-      flushParagraph();
-      flushHook();
-      afterMainTitle = false;
-      inCommentSection = true;
-      blocks.push({ type: "comment-label", text: "江湖评语" });
-      if (commentLine.rest) {
-        pushCommentLines(blocks, commentLine.rest);
+      blocks.push({ type: "comment-label", text: commentSection.label });
+      if (commentSection.rest) {
+        pushCommentLines(blocks, commentSection.rest);
       }
       continue;
     }
@@ -195,4 +207,5 @@ module.exports = {
   stripInlineMarkdown,
   normalizeParagraphText,
   splitPoetryLines,
+  COMMENT_LABELS,
 };

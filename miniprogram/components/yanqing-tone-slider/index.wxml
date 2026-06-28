@@ -1,0 +1,37 @@
+<view class="yanqing-tone-frame">
+  <view class="yanqing-tone">
+    <view class="yanqing-tone-title">情感强度</view>
+    <view class="yanqing-tone-labels">
+      <view
+        wx:for="{{levelMeta}}"
+        wx:key="tone"
+        wx:for-index="idx"
+        class="yanqing-tone-label-col {{level === idx ? 'active' : ''}}"
+        bindtap="selectLevel"
+        data-level="{{idx}}"
+      >
+        <text class="yanqing-tone-label">{{item.label}}</text>
+        <text class="yanqing-tone-summary">{{item.summary}}</text>
+      </view>
+    </view>
+    <view
+      class="yanqing-tone-track"
+      catchtouchstart="onTrackTouchStart"
+      catchtouchmove="onTrackTouchMove"
+      catchtouchend="onTrackTouchEnd"
+      catchtouchcancel="onTrackTouchEnd"
+    >
+      <view class="yanqing-tone-track-line"></view>
+      <view class="yanqing-tone-track-fill {{dragging ? 'is-dragging' : ''}}" style="width: {{thumbPercent}}%;"></view>
+      <view
+        wx:for="{{levelMeta}}"
+        wx:key="tone"
+        wx:for-index="idx"
+        class="yanqing-tone-track-node {{level === idx ? 'active' : ''}}"
+        style="left: {{idx * 100}}%;"
+      ></view>
+      <view class="yanqing-tone-track-thumb {{dragging ? 'is-dragging' : ''}}" style="left: {{thumbPercent}}%;"></view>
+    </view>
+    <view class="yanqing-tone-hint">{{hint}}</view>
+  </view>
+</view>

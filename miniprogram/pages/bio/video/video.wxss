@@ -178,9 +178,11 @@
 }
 
 .wuxia-tone-inline {
-  margin: 0 0 16rpx 32rpx;
-  padding: 0 0 8rpx 20rpx;
-  border-left: 4rpx solid rgba(196, 165, 116, 0.45);
+  margin: 8rpx 32rpx 16rpx;
+}
+
+.yanqing-tone-inline {
+  margin: 8rpx 32rpx 16rpx;
 }
 
 .section-label,

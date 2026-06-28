@@ -10,6 +10,8 @@ const {
   normalizePerson,
   normalizeWuxiaTone,
   DEFAULT_WUXIA_TONE,
+  normalizeYanqingTone,
+  DEFAULT_YANQING_TONE,
   getChatDraft,
   saveChatDraft,
   clearChatDraft,
@@ -34,6 +36,7 @@ Page({
     showStylePicker: false,
     showLengthPicker: false,
     wuxiaTone: DEFAULT_WUXIA_TONE,
+    yanqingTone: DEFAULT_YANQING_TONE,
   },
 
   onShow() {
@@ -60,10 +63,11 @@ Page({
       selectedPerson: person,
       personLabel: getPersonLabel(person),
       selectedStyle: style,
-      styleLabel: getStyleLabel(style, draft?.wuxiaTone),
+      styleLabel: getStyleLabel(style, { wuxiaTone: draft?.wuxiaTone, yanqingTone: draft?.yanqingTone }),
       selectedLength: length,
       lengthLabel: getLengthLabel(length),
       wuxiaTone: normalizeWuxiaTone(draft?.wuxiaTone),
+      yanqingTone: normalizeYanqingTone(draft?.yanqingTone),
     });
   },
 
@@ -75,52 +79,21 @@ Page({
       selectedStyle: this.data.selectedStyle,
       selectedLength: this.data.selectedLength,
       wuxiaTone: this.data.wuxiaTone,
+      yanqingTone: this.data.yanqingTone,
     });
   },
 
-  promptSubjectName(onSuccess) {
-    const hint = this.data.subjectName
-      ? `当前称呼：${this.data.subjectName}。请在下方输入新的称呼。`
-      : "第三人称叙述时，请填写如何称呼主人公（如：张先生、母亲、老李）";
-    wx.showModal({
-      title: "主人公称呼",
-      content: hint,
-      editable: true,
-      placeholderText: "请输入称呼",
-      confirmText: "确定",
-      confirmColor: "#8b6914",
-      success: (res) => {
-        if (!res.confirm) return;
-        const subjectName = (res.content || "").trim();
-        if (!subjectName) {
-          wx.showToast({ title: "请填写称呼", icon: "none" });
-          return;
-        }
-        this.setData({
-          selectedPerson: "third",
-          personLabel: getPersonLabel("third"),
-          subjectName,
-        });
-        this.persistDraft();
-        if (onSuccess) onSuccess();
-      },
-    });
-  },
-
-  editSubjectName() {
-    this.promptSubjectName();
+  onSubjectNameInput(e) {
+    this.setData({ subjectName: e.detail.value || "" });
+    this.persistDraft();
   },
 
   selectPerson(e) {
     const person = normalizePerson(e.currentTarget.dataset.person);
-    if (person === "third") {
-      this.promptSubjectName();
-      return;
-    }
     this.setData({
       selectedPerson: person,
       personLabel: getPersonLabel(person),
-      subjectName: "",
+      subjectName: person === "third" ? this.data.subjectName : "",
     });
     this.persistDraft();
   },
@@ -146,8 +119,8 @@ Page({
     const style = e.currentTarget.dataset.style;
     this.setData({
       selectedStyle: style,
-      styleLabel: getStyleLabel(style, this.data.wuxiaTone),
-      showStylePicker: style === "wuxia" ? true : this.data.showStylePicker,
+      styleLabel: getStyleLabel(style, { wuxiaTone: this.data.wuxiaTone, yanqingTone: this.data.yanqingTone }),
+      showStylePicker: style === "wuxia" || style === "yanqing" ? true : this.data.showStylePicker,
     });
     this.persistDraft();
   },
@@ -156,7 +129,16 @@ Page({
     const wuxiaTone = normalizeWuxiaTone(e.detail.value);
     this.setData({
       wuxiaTone,
-      styleLabel: getStyleLabel(this.data.selectedStyle, wuxiaTone),
+      styleLabel: getStyleLabel(this.data.selectedStyle, { wuxiaTone, yanqingTone: this.data.yanqingTone }),
+    });
+    this.persistDraft();
+  },
+
+  onYanqingToneChange(e) {
+    const yanqingTone = normalizeYanqingTone(e.detail.value);
+    this.setData({
+      yanqingTone,
+      styleLabel: getStyleLabel(this.data.selectedStyle, { wuxiaTone: this.data.wuxiaTone, yanqingTone }),
     });
     this.persistDraft();
   },
@@ -166,30 +148,29 @@ Page({
   },
 
   generate() {
-    const proceed = () => {
-      const chatMessages = this.data.messages;
-      clearChatDraft();
-      const payload = {
-        source: "chat",
-        style: this.data.selectedStyle,
-        length: this.data.selectedLength,
-        person: this.data.selectedPerson,
-        data: {
-          messages: chatMessages,
-          subjectName: (this.data.subjectName || "").trim(),
-        },
-      };
-      if (this.data.selectedStyle === "wuxia") {
-        payload.wuxiaTone = this.data.wuxiaTone;
-      }
-      navigateToGenerate(payload);
-    };
-
     if (this.data.selectedPerson === "third" && !(this.data.subjectName || "").trim()) {
-      this.promptSubjectName(proceed);
+      wx.showToast({ title: "请填写主人公称呼", icon: "none" });
       return;
     }
 
-    proceed();
+    const chatMessages = this.data.messages;
+    clearChatDraft();
+    const payload = {
+      source: "chat",
+      style: this.data.selectedStyle,
+      length: this.data.selectedLength,
+      person: this.data.selectedPerson,
+      data: {
+        messages: chatMessages,
+        subjectName: (this.data.subjectName || "").trim(),
+      },
+    };
+    if (this.data.selectedStyle === "wuxia") {
+      payload.wuxiaTone = this.data.wuxiaTone;
+    }
+    if (this.data.selectedStyle === "yanqing") {
+      payload.yanqingTone = this.data.yanqingTone;
+    }
+    navigateToGenerate(payload);
   },
 });

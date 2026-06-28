@@ -1,6 +1,7 @@
 {
   "navigationBarTitleText": "导入视频",
   "usingComponents": {
-    "wuxia-tone-slider": "/components/wuxia-tone-slider/index"
+    "wuxia-tone-slider": "/components/wuxia-tone-slider/index",
+    "yanqing-tone-slider": "/components/yanqing-tone-slider/index"
   }
 }

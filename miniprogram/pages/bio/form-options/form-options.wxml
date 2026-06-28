@@ -70,11 +70,17 @@
             <view class="wuxia-tone-inline" wx:if="{{styleItem.key === 'wuxia' && selectedStyle === 'wuxia'}}">
               <wuxia-tone-slider value="{{wuxiaTone}}" bind:change="onWuxiaToneChange" />
             </view>
+            <view class="yanqing-tone-inline" wx:if="{{styleItem.key === 'yanqing' && selectedStyle === 'yanqing'}}">
+              <yanqing-tone-slider value="{{yanqingTone}}" bind:change="onYanqingToneChange" />
+            </view>
           </block>
         </block>
       </view>
       <view class="wuxia-tone-inline wuxia-tone-folded" wx:if="{{selectedStyle === 'wuxia' && !showStylePicker}}">
         <wuxia-tone-slider value="{{wuxiaTone}}" bind:change="onWuxiaToneChange" />
+      </view>
+      <view class="yanqing-tone-inline yanqing-tone-folded" wx:if="{{selectedStyle === 'yanqing' && !showStylePicker}}">
+        <yanqing-tone-slider value="{{yanqingTone}}" bind:change="onYanqingToneChange" />
       </view>
     </view>
   </view>

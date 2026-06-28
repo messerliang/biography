@@ -1,30 +1,28 @@
 const {
-  normalizeWuxiaTone,
-  wuxiaToneToLevel,
-  wuxiaLevelToTone,
-  getWuxiaToneMeta,
-  getWuxiaToneMetaForUI,
-  DEFAULT_WUXIA_TONE,
+  normalizeYanqingTone,
+  yanqingToneToLevel,
+  yanqingLevelToTone,
+  getYanqingToneMeta,
+  getYanqingToneMetaForUI,
+  DEFAULT_YANQING_TONE,
 } = require("../../utils/bio");
 
-const LEVEL_COUNT = 3;
+const LEVEL_COUNT = 2;
 
 function syncDisplay(tone) {
-  const normalized = normalizeWuxiaTone(tone);
-  const meta = getWuxiaToneMeta(normalized);
-  const level = wuxiaToneToLevel(normalized);
+  const normalized = normalizeYanqingTone(tone);
+  const meta = getYanqingToneMeta(normalized);
+  const level = yanqingToneToLevel(normalized);
   return {
     level,
     hint: meta.hint,
-    thumbPercent: level * 50,
+    thumbPercent: level * 100,
     dragging: false,
   };
 }
 
 function levelFromRatio(ratio) {
-  if (ratio < 0.25) return 0;
-  if (ratio < 0.75) return 1;
-  return 2;
+  return ratio < 0.5 ? 0 : 1;
 }
 
 function ratioFromTouch(clientX, rect) {
@@ -36,14 +34,14 @@ Component({
   properties: {
     value: {
       type: Number,
-      value: DEFAULT_WUXIA_TONE,
+      value: DEFAULT_YANQING_TONE,
     },
   },
 
   data: {
-    levelMeta: getWuxiaToneMetaForUI(),
+    levelMeta: getYanqingToneMetaForUI(),
     level: 0,
-    hint: getWuxiaToneMeta(DEFAULT_WUXIA_TONE).hint,
+    hint: getYanqingToneMeta(DEFAULT_YANQING_TONE).hint,
     thumbPercent: 0,
     dragging: false,
   },
@@ -59,7 +57,7 @@ Component({
       return new Promise((resolve) => {
         this.createSelectorQuery()
           .in(this)
-          .select(".wuxia-tone-track")
+          .select(".yanqing-tone-track")
           .boundingClientRect((rect) => {
             resolve(rect && rect.width ? rect : null);
           })
@@ -70,8 +68,8 @@ Component({
     updateFromClientX(clientX, rect) {
       const ratio = ratioFromTouch(clientX, rect);
       const level = levelFromRatio(ratio);
-      const tone = wuxiaLevelToTone(level);
-      const meta = getWuxiaToneMeta(tone);
+      const tone = yanqingLevelToTone(level);
+      const meta = getYanqingToneMeta(tone);
       this.setData({
         level,
         hint: meta.hint,
@@ -82,7 +80,7 @@ Component({
 
     applyLevel(idx, emit) {
       const safeIdx = Math.min(LEVEL_COUNT - 1, Math.max(0, Math.round(idx)));
-      const tone = wuxiaLevelToTone(safeIdx);
+      const tone = yanqingLevelToTone(safeIdx);
       this.setData(syncDisplay(tone));
       if (emit) {
         this.triggerEvent("change", { value: tone });
@@ -118,7 +116,7 @@ Component({
     onTrackTouchEnd() {
       if (!this.data.dragging) return;
       const idx = this.data.level;
-      const tone = wuxiaLevelToTone(idx);
+      const tone = yanqingLevelToTone(idx);
       const startLevel = this._dragStartLevel ?? idx;
       this.setData(syncDisplay(tone));
       this._trackRect = null;

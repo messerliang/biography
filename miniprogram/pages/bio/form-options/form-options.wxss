@@ -50,16 +50,19 @@
 }
 
 .wuxia-tone-inline {
-  margin: 0 0 8rpx 56rpx;
-  padding: 0 0 16rpx 24rpx;
-  border-left: 4rpx solid rgba(196, 165, 116, 0.45);
+  margin: 8rpx 56rpx 16rpx;
 }
 
 .wuxia-tone-folded {
-  margin: 0 0 16rpx;
-  padding: 0 0 8rpx;
-  border-top: 1rpx solid #f0ebe3;
-  border-left: none;
+  margin: 12rpx 0 16rpx;
+}
+
+.yanqing-tone-inline {
+  margin: 8rpx 56rpx 16rpx;
+}
+
+.yanqing-tone-folded {
+  margin: 12rpx 0 16rpx;
 }
 
 .section-title {
@@ -143,7 +146,7 @@
 }
 
 .footer-spacer {
-  height: calc(136rpx + env(safe-area-inset-bottom));
+  height: calc(168rpx + env(safe-area-inset-bottom));
 }
 
 .footer {
@@ -151,6 +154,7 @@
   bottom: 0;
   left: 0;
   right: 0;
+  z-index: 100;
   display: flex;
   align-items: center;
   gap: 20rpx;
