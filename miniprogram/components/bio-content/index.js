@@ -16,11 +16,15 @@ Component({
       type: Boolean,
       value: false,
     },
+    subjectName: {
+      type: String,
+      value: "",
+    },
   },
 
   observers: {
-    "content, fontSize": function (content, fontSize) {
-      this.refreshBlocks(content, fontSize);
+    "content, fontSize, subjectName": function (content, fontSize, subjectName) {
+      this.refreshBlocks(content, fontSize, subjectName);
     },
   },
 
@@ -28,15 +32,15 @@ Component({
     attached() {
       loadHeroCalligraphyFont();
       loadCommentFont();
-      this.refreshBlocks(this.properties.content, this.properties.fontSize);
+      this.refreshBlocks(this.properties.content, this.properties.fontSize, this.properties.subjectName);
     },
   },
 
   methods: {
-    refreshBlocks(content, fontSize) {
+    refreshBlocks(content, fontSize, subjectName) {
       const body = fontSize || 30;
       this.setData({
-        blocks: parseBiographyContent(content),
+        blocks: parseBiographyContent(content, { subjectName: subjectName || "" }),
         mainTitleSize: Math.round(body * 1.47),
         chapterSize: Math.round(body * 1.13),
         commentLabelSize: Math.round(body * 1.07),

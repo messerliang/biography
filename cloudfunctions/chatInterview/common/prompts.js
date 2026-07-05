@@ -15,14 +15,14 @@ const LEGEND_LENGTH_INSTRUCTIONS = {
   short: "篇幅 500–700 字：主线清晰，但须保留至少 2 个具体场景与 1 段对话。",
   normal: "篇幅 1200–1800 字：详略分明，重点章细写、过渡章快切；章数随素材，勿为凑章重复；不得写成流水账。",
   adaptive:
-    "篇幅随素材而定，娱乐向传记建议 1000–1800 字；素材丰富则充分展开场景与对话，素材少则以意境与反差取胜，勿硬编支线。",
+    "篇幅要求：用户已选择「遵照实际填写」。请根据素材信息量自行决定篇幅，不设固定字数目标；素材少则结构可从简（可数百字），丰富则充分展开场景与对话，勿为娱乐结构硬凑字数或硬编支线。",
 };
 
 const LENGTH_INSTRUCTIONS = {
   short: "篇幅 300–500 字：只保留人生主线与关键情感，删繁就简，不得明显超出上限。",
   normal: "篇幅 800–1000 字：结构完整（开端—发展—收束），详略得当，不得明显超出该范围。",
   adaptive:
-    "篇幅随素材而定：素材少则简明（可数百字），素材丰富则充分展开；不注水、不硬压缩。",
+    "篇幅要求：用户已选择「遵照实际填写」。请根据素材信息量自行决定篇幅；素材少则简明（可数百字），素材丰富则充分展开；不注水、不硬压缩，以如实覆盖用户内容为准。",
 };
 
 const ANTI_AI_CLICHE = `文字要有文学性和呼吸感，避免 AI 套话与空泛句，禁止使用或尽量少用：
@@ -30,15 +30,25 @@ const ANTI_AI_CLICHE = `文字要有文学性和呼吸感，避免 AI 套话与�
 「正如那句老话所说」「或许这就是人生吧」「回首往昔」等模板化表达。
 用具体的人名、地点、动作、对话碎片（若素材中有）替代抽象感慨。`;
 
+const ANTI_CHRONOLOGY_CHAPTER_OPENING = `【禁止编年章头·硬性，分章时尤其须遵守】
+分章小标题已标示人生阶段，正文不要再以年月起句；严禁「一章一段首一个日期」的流水线。
+- 禁止：各章/各节首段以「XXXX年」「XXXX年X月」「XXXX年X月X日」起句（如「1965年3月，山东农村…」「1983年9月，张明第一次…」「2003年，张明调到了…」）
+- 禁止：相邻两章使用同一「时间+地点+人事」起手式；禁止把素材节点日期机械复制到章首
+- 允许：年月融入段中（如「他十七岁那年」「进厂后的第一个冬天」）；全篇以「XXXX年X月」作段首的至多 1 次（建议 0 次）
+- 各章首段须换用不同起笔：场景、对话、物件、动作、感官——参考「老院的瓦檐还在滴水…」，而非「某年某月，某人…」`;
+
 const CORE_WRITING_RULES = `核心写作规则：
 1. 严格基于用户素材，不虚构未提及的人物、事件、时间、地点与因果。
-2. 拒绝流水账：严禁连续多段使用「XXXX年X月，我做了某事」这类机械编年体起句；时间宜融入叙述，除开篇或重大转折处可点明一次年月外，不宜反复置于段首。
+2. 拒绝流水账：严禁连续多段、各章首段使用「XXXX年X月，我做了某事」这类机械编年体起句；时间宜融入叙述与场景，不得把每个人生阶段都写成「章首报年月」。
 3. 场景化叙事：将时间转化为具体场景、画面或情感（如素材中的地点、动作、声音），而非直接报年份；场景细节须来自素材或合理推断，不可为修辞而虚构未提及的环境。
 4. 各素材块/节点之间若存在时间或因果跳跃，用一两句自然过渡补全逻辑；可用因果、情感递进或人生感悟串联，形成流畅故事线。相邻节点可合并叙述，全文段落数不必与节点数相同。
 5. 信息不足处略写或留白，不编造细节填补。
-6. 段落清晰，适合手机阅读与分享。
+6. 段落清晰，适合手机阅读与分享；**段与段之间须空一行**（仅一个空行，勿连续多空行）。
 7. 遵守指定文风与篇幅，二者冲突时篇幅优先压缩，文风次之微调。
-8. 段首勿手打空格或全角空格，缩进由排版程序处理。`;
+8. 段首勿手打空格或全角空格，首行缩进两格由排版程序自动处理。
+9. 总标题单独成行；标题后空一行再起正文。
+
+${ANTI_CHRONOLOGY_CHAPTER_OPENING}`;
 
 const BIOGRAPHY_SYSTEM_PROMPT = `你是一位资深中文传记作家，擅长将零散的人生素材整理成真实、可读、有温度、有深度的人物传记。
 
@@ -182,7 +192,7 @@ const WUXIA_LEGEND_PACING = `【节奏与章数·须遵守】
    - 单场景细写（仅重点章）
    - 短句留白（古龙式）
    - 叙事概括（一句带过数年）
-4. 相邻两章禁止：同以环境长句起笔；同以「配角出场+对话+章末意象金句」收束；都含完整四层次细写段。
+4. 相邻两章禁止：同以环境长句起笔；同以「XXXX年/月」起笔；同以「配角出场+对话+章末意象金句」收束；都含完整四层次细写段。
 5. 终章：抒情收束为主，禁止再上大段细写场景；可呼应开篇钩子或物件。`;
 
 const WUXIA_LEGEND_STYLE = `【文风·古龙与温瑞安】
@@ -256,7 +266,7 @@ const YANQING_LEGEND_PACING = `【节奏与分幕·须遵守】
    - 书信/便签体（一段信、短信式独白，素材允许时）
    - 单场景细写（雨夜、车站、厨房灯——情绪场景）
    - 季节/物件快切（用天气、信物串时间，禁止刀光剑影式快切）
-4. 相邻两幕禁止：同以环境长句起笔；同以「意象金句」收束；都含完整四层细写。
+4. 相邻两幕禁止：同以环境长句起笔；同以「XXXX年/月」起笔；同以「意象金句」收束；都含完整四层细写。
 5. 终章：情感收束为主，宜场景定格（雨停、车开、灯灭）或余韵独白；虐恋档可加强浓度但禁止空泛「人生如梦」。`;
 
 const YANQING_LEGEND_SCENE_DETAIL = `【代入感场景写法·仅用于重点幕的细写段】
@@ -269,22 +279,62 @@ const YANQING_LEGEND_SCENE_DETAIL = `【代入感场景写法·仅用于重点�
 4. 小动作链：递伞、折信、回头、停笔——禁止「像武林高手」类比喻`;
 
 const YANQING_LEGEND_LAYOUT = `【开篇版式·须遵守】
+${BIO_PARAGRAPH_LAYOUT}
 正文顺序：总标题 → 片头独白（无小标题）→ 分章标题 → 正文 → … → 终章 → （可选）情笺结语。
 
-片头独白：1–3 句，单独成段，写未说破的心事；禁止设「片头独白」「引子」等小标题。
+片头独白：1–3 句，单独成段，写未说破的心事；禁止设「片头独白」「引子」等小标题；片头与第一章之间空一行。
 
-版式示例（勿照搬）：
+版式示例（勿照搬；注意第一章首段用场景起笔，禁止「1965年3月，…」式章头）：
 # 张明·几段心事
 
 有些话说出口就轻了，有些心事，却在心里压了许多年。
 
 ## 第一章·雨夜老院
 
-老院的瓦檐还在滴水……`;
+老院的瓦檐还在滴水……
+
+反例（禁止）：## 第一章·雨夜老院 → 1965年3月，山东农村……`;
+
+const BIO_PARAGRAPH_LAYOUT = `【正文版式·须遵守】
+1. 总标题单独一行（可用 # 标题 或纯文本如「赵小军传」）；标题后空一行再起正文
+2. 段与段之间须空一行（仅一个空行，勿连续多空行）
+3. 段首勿手打全角/半角空格，首行缩进两格由排版程序自动处理
+4. 禁止 markdown 列表、禁止段首编号或节点日期式标记`;
+
+const NARRATIVE_LAYOUT = `【纪实叙述·版式】
+${BIO_PARAGRAPH_LAYOUT}
+正文顺序：总标题 → 正文段落（3–6 段，段间空行）→ 收束；不设章回小标题。
+版式示例（结构示意，勿照搬内容）：
+# 张明传
+
+那年冬天，厂区里的水管冻裂……
+
+许多年后，他仍记得……`;
+
+const LITERARY_LAYOUT = `【文学散文·版式】
+${BIO_PARAGRAPH_LAYOUT}
+正文顺序：总标题 → 正文段落（段间空行，宜有节奏与意象起伏）→ 余韵收束；不设章回小标题。`;
+
+const CLASSICAL_LAYOUT = `【文言版式·须遵守】
+1. 总题单独一行（如「赵小军传」）；总题后空一行再起正文
+2. 正文每段单独成段，段与段之间须空一行（仅一个空行）
+3. 段首勿手打空格，首行缩进两格由排版程序处理；无章回小标题时全文以空行分段
+4. 「太史公曰」等评述须单独成段，其前空一行；禁止 markdown 标记
+
+版式示例（结构示意，勿照搬内容）：
+赵小军传
+
+赵小军者，豫州人也。少时，父母俱为厂工……
+
+既冠，赴省城就学……
+
+太史公曰：……（仅太史公风须写；他路用无标签余韵收束）`;
 
 const YANQING_NORMAL_LAYOUT = `【结构·正常档】
-总标题宜用「XXX·几段心事」「写给XXX的故事」；可分 2–4 节，节名带情感场景（非江湖词）。
-开篇可用 1–2 句情感定调（不必片头独白式悬念）；重视对话与内心活动；结尾宜余韵收束，不写情笺结语块。`;
+${BIO_PARAGRAPH_LAYOUT}
+总标题宜用「XXX·几段心事」「写给XXX的故事」；可分 2–4 节（## 节名），节名带情感场景（非江湖词）；节内段落段间空行。
+开篇可用 1–2 句情感定调（不必片头独白式悬念）；重视对话与内心活动；结尾宜余韵收束，不写情笺结语块。
+各节首段禁止以「XXXX年/月」起句；时间融入场景或段中。`;
 
 const YANQING_EPILOGUE_WITH = `【结语·本篇须写情笺结语】
 终章正文收束后，须追加「情笺结语」小标题（可用 **情笺结语** 或 ## 情笺结语），后接 3–6 行短句心语：每行一句完整话；语气婉约、有余韵，可带「你」或深情旁白；禁止空泛说教与江湖调侃。`;
@@ -365,35 +415,46 @@ const XUANHUAN_LEGEND_SCENE_DETAIL = `【玄幻细写写法·仅用于重点章�
 [宏景] + [真实动作/对话] + [物件法则化] + [内心一瞬]`;
 
 const XUANHUAN_LEGEND_LAYOUT = `【开篇版式·须遵守】
+${BIO_PARAGRAPH_LAYOUT}
 正文顺序：总标题 → 开卷语（无小标题）→ 章回正文 → 终章（无结语块）。
 
-开卷语 1–3 句；第一章首段须同频承接后再落地；禁止语气断崖。
+开卷语 1–3 句；开卷语与第一章之间空一行；第一章首段须同频承接后再落地；禁止语气断崖。
 版式只说明结构，示例人名/句子均不可照搬。`;
 
 const CLASSICAL_LENGTH_BY_MAIN = {
   taishigong: {
     short: "篇幅 450–650 字：列传主线清晰，保留至少 1 个张力细节；须含太史公曰。",
     normal: "篇幅 1000–1600 字：史诗脉络详略分明，重点阶段可细写；须含太史公曰。",
-    adaptive: "篇幅 800–1600 字：随素材而定，宜密不宜水；须含太史公曰。",
   },
   zhenchuan: {
     short: "篇幅 400–600 字：家传片段，以少胜多，重余韵。",
     normal: "篇幅 800–1200 字：追忆日常与亲情，朴素真挚，忌铺陈。",
-    adaptive: "篇幅 600–1200 字：随素材而定，以情见史，不注水。",
   },
   wanming: {
     short: "篇幅 400–650 字：捕捉 1–2 个鲜活瞬间，宜短宜趣。",
     normal: "篇幅 800–1400 字：小品随笔气，段落宜短，利阅读分享。",
-    adaptive: "篇幅 600–1400 字：随素材而定，重真趣与画面。",
   },
   tangsong: {
     short: "篇幅 350–550 字：一事一理，风骨须见。",
     normal: "篇幅 700–1200 字：以技艺或一事立传，论说点睛，忌空议。",
-    adaptive: "篇幅 500–1200 字：随素材而定，重理趣与风骨。",
   },
 };
 
+const CLASSICAL_ANTI_CHRONOLOGY = `【文言·禁止编年段首·硬性】
+- 禁止各段以「年X（YYYY）」「及长（2002）」「既卒业（2006）」「后归县（2011）」起句
+- 禁止「癸亥（1983）」「生于XXXX年」、括号标注公历/干支作段首
+- 禁止一段对应一个时间轴节点或素材条目；禁止逐条把素材「译」成文言
+- 时间宜融入场景（如「少时」「既冠」「南行之冬」），全篇以公历/干支/岁数作段首至多 0–1 次（建议 0 次）
+- 相邻段落禁止同模板起笔（忌段段「报岁+记事」）`;
+
+const CLASSICAL_ANTI_TRANSLATION = `【文言·禁止直译素材·硬性】
+- biography 须是重述后的文言散文，不是把每条素材换成文言句式顺排
+- 相邻节点须合并进同一段或交织叙述，不可「一条素材一段」
+- 须用场景、动作、家常话、物象串联；忌流水账式报阶段、报职业、报地点`;
+
 const CLASSICAL_CORE_RULES = `【文言传记·共通须遵守】
+${CLASSICAL_ANTI_CHRONOLOGY}
+${CLASSICAL_ANTI_TRANSLATION}
 1. 严格基于素材，不虚构人物、事件、因果；不可为文采编造「受冤」「遭际不公」等素材未暗示的内容。
 2. **文言质感优先**：句法、节奏、虚词、章法须合指定路数的文言传统（太史公/震川/晚明/唐宋），读感须是文言，不可为求易懂而写成现代白话再点缀几个古字。
 3. **今物今词**：电话、机床、馍、厂、火车等现代名物与北方/口语词汇可保留，不必硬换成古代名目（不必把馍写成麦饭、电话写成驿传）；以今词入文言句法即可。
@@ -402,9 +463,11 @@ const CLASSICAL_CORE_RULES = `【文言传记·共通须遵守】
    - 叙述多用文言句式：「……者，……也」「既而……」「方……时」「未几……」「因……故……」「每……则……」；倒装、省略、对举、互文可适度使用
    - 禁止现代白话句式冒充文言：如「谁家……必……」「觉得/因为/所以/然后/其实/挺/很/非常」成串、过多「的/了/着/地」、完整现代主谓宾长句流水
    - 禁止「盖闻夫」「呜呼噫嘻」连篇假文言；禁止为文言而文言、辞不达意
-5. 拒绝机械编年体；时间融入场景；段首勿手打空格。
-6. 禁止 markdown（**、## 等），**唯一例外**：太史公风正文末尾可用 **太史公曰** 或 ## 太史公曰；禁止其他 meta 小标题。
-7. 禁止空洞套话；须用素材中的人名、地点、物件、动作。`;
+5. 拒绝机械编年体；时间融入场景；段首勿手打空格，首行缩进由排版程序处理。
+6. 段与段之间须空一行（仅一个空行）。
+7. 禁止 markdown（**、## 等），**唯一例外**：太史公风正文末尾可用 **太史公曰** 或 ## 太史公曰；禁止其他 meta 小标题。
+8. 禁止空洞套话；须用素材中的人名、地点、物件、动作。
+9. **总题必填**：biography 第一行必须是单独成行的总题（如「赵小军传」「某某家传」），禁止省略；第二行空行后，正文方可起「某某者，……也」；不得直接从「某某者」起笔而无总题。`;
 
 const BIOGRAPHY_SYSTEM_PROMPT_CLASSICAL = `你是一位精通文言传记的作家，擅长以正宗文言句法书写现代人生，文气完足，不因「好懂」而降级为白话。
 
@@ -421,14 +484,15 @@ const CLASSICAL_TAISHIGONG = `【太史公风·慷慨悲歌的史传（司马迁
 - 句法：史传叙述体，起笔常概括人物/时代；多用短句顿挫、叙事断落；「者/也/矣/焉」与「既而/方/未几/遂」自然穿插；今词（厂、电话等）入句须文言化语法，非白话直述。
 - 叙事：于时代/历史背景中写个人命运；大开大合，张力细节刻画个性。
 - 结构：总题（如「某某传」）→ 起笔定调 → 事略正文（可分节，勿机械章回）→ **太史公曰**（必须，后接评述：借古喻今，定格历史位置）。
-- 负向：素材若仅为平淡居家、无大转折，不得硬写史诗、不得虚造英雄遭际。`;
+- 负向：素材若仅为平淡居家、无大转折，不得硬写史诗、不得虚造英雄遭际；不得逐节点分段、不得段首报岁报年。`;
 
 const CLASSICAL_ZHENCHUAN = `【震川风·温情脉脉的家史（归有光）】
 - 神韵：一往情深，于无声处听惊雷；写庸常生活的深味。
 - 句法：朴素而仍是文言——《项脊轩志》《先妣事略》式；短句、白描、虚词自然；家常对话可稍活（如「寒乎？」），但叙述段须文言句读，不可整段现代白话。馍、电话等今词可保留。
 - 叙事：追忆日常碎片（旧物、家常话、场景）寄托深情。
 - 结构：总题（如「某某家传」）→ 起笔 → 正文 → 无标签收束（「今已……，每念及之……」式余韵，禁止「太史公曰」）。
-- 与晚明切割：少幽默轻趣，多亲情治愈。`;
+- 与晚明切割：少幽默轻趣，多亲情治愈。
+- 负向：不得一段一素材节点；不得段首「年X（YYYY）」式编年。`;
 
 const CLASSICAL_WANMING_YUAN = `【晚明小品·袁宏道式（轻快）】
 - 神韵：独抒性灵，在文言框架内求真趣、幽默、豁达——是晚明口语化的文言，不是当代白话。
@@ -548,16 +612,20 @@ function scoreClassicalTaishigong(text) {
   let s = 0;
   if (/(创业|企业|老板|董事|领袖|行业|改制|下岗|浪潮|时代|变革|大起大落|转折|成就|挫折|破产|重来|拼)/.test(t)) s += 3;
   if (/(奋斗|攻坚|带|团队|公司|厂|改革|开拓)/.test(t)) s += 2;
-  if (/(平凡|日常|家常|父母|做饭|散步)/.test(t) && !/(创业|改制|时代|成就)/.test(t)) s -= 2;
+  if (/(南下|回乡|进城|离省|寄钱|扩招|年代|变迁)/.test(t)) s += 2;
+  if (/(打工|务工|谋生|基层|平凡人生)/.test(t)) s += 1;
+  if (/(平凡|日常|家常|父母|做饭|散步)/.test(t) && !/(创业|改制|时代|成就|南下|打工)/.test(t)) s -= 2;
   return Math.max(0, s);
 }
 
 function scoreClassicalZhenchuan(text) {
   const t = String(text || "");
   let s = 0;
-  if (/(父|母|爹|娘|祖辈|爷爷|奶奶|外公|外婆|家|亲情|家常|厨房|院子|老屋|项脊|妣|追忆|思念)/.test(t)) s += 3;
-  if (/(平凡|普通|一生|陪伴|照顾|缝|织|做饭|送别|离世|去世|祭)/.test(t)) s += 2;
-  return s;
+  if (/(追忆|思念|去世|离世|祭|先妣|项脊|家传|旧物|老屋|庭前|抱.*(?:婴|孩|孙)|每念及之)/.test(t)) s += 4;
+  if (/(父|母|爹|娘|祖辈|爷爷|奶奶|外公|外婆)/.test(t)) s += 1;
+  if (/(陪伴|照顾|缝|织|做饭|送别)/.test(t)) s += 2;
+  if (/(打工|南下|厂|技术员|售后|机械|机床|五金|谋生|寄钱|车间)/.test(t)) s -= 2;
+  return Math.max(0, s);
 }
 
 function scoreClassicalWanming(text) {
@@ -574,7 +642,28 @@ function scoreClassicalTangsong(text) {
   let s = 0;
   if (/(师傅|技艺|手艺|工种|工匠|匠人|非遗|技术|专家|工程师|机床|拧|修|种|造|一行|专业)/.test(t)) s += 3;
   if (/(坚持|担当|死磕|风骨|气节|十年|磨砺|学徒)/.test(t)) s += 2;
+  if (/(机械|五金|售后|纺织|技术员|技工|维修|操作)/.test(t)) s += 2;
   return s;
+}
+
+function scoreClassicalOrdinaryLabor(text) {
+  const t = String(text || "");
+  let s = 0;
+  if (/(打工|南下|务工|进厂|车间|技工|技术员|售后|机床|五金|机械|纺织)/.test(t)) s += 3;
+  if (/(回县|回乡|县城|谋生|工资|寄钱|普通|平凡|本科|职校)/.test(t)) s += 2;
+  return s;
+}
+
+function pickClassicalStyleFallback(material) {
+  const labor = scoreClassicalOrdinaryLabor(material);
+  if (labor >= 3) {
+    return Math.random() < 0.5 ? "taishigong" : "tangsong";
+  }
+  if (labor >= 1) {
+    const options = ["taishigong", "tangsong", "wanming"];
+    return options[Math.floor(Math.random() * options.length)];
+  }
+  return "zhenchuan";
 }
 
 function pickClassicalStyle(material) {
@@ -585,10 +674,20 @@ function pickClassicalStyle(material) {
     tangsong: scoreClassicalTangsong(material),
   };
 
+  const laborScore = scoreClassicalOrdinaryLabor(material);
+  if (laborScore >= 3) {
+    scores.taishigong += 2;
+    scores.tangsong += 2;
+    scores.zhenchuan = Math.max(0, scores.zhenchuan - 2);
+  } else if (laborScore >= 1) {
+    scores.taishigong += 1;
+    scores.tangsong += 1;
+  }
+
   if (scores.zhenchuan >= 5 && scores.taishigong < 4) {
     scores.taishigong = Math.max(0, scores.taishigong - 2);
   }
-  if (scores.taishigong < 3 && scores.zhenchuan >= 3) {
+  if (scores.taishigong < 3 && scores.zhenchuan >= 4) {
     scores.taishigong = Math.min(scores.taishigong, 1);
   }
 
@@ -596,7 +695,7 @@ function pickClassicalStyle(material) {
   const tied = ["taishigong", "zhenchuan", "wanming", "tangsong"].filter(
     (k) => scores[k] === max && scores[k] > 0
   );
-  const main = tied.length ? tied[Math.floor(Math.random() * tied.length)] : "zhenchuan";
+  const main = tied.length ? tied[Math.floor(Math.random() * tied.length)] : pickClassicalStyleFallback(material);
 
   let sub = null;
   if (main === "wanming") sub = pickWanmingSub(material);
@@ -642,12 +741,27 @@ function getClassicalStructureHint(pick) {
   const label = getClassicalStyleLabel(pick);
   const ending =
     pick.main === "taishigong"
-      ? "正文后须设「太史公曰」评述段。"
+      ? "正文后须设「太史公曰」评述段（单独成段，其前空一行）。"
       : "正文收束为无标签追忆/余韵/理趣句，禁止「太史公曰」及任何结语小标题。";
-  return `文言结构提示：本篇为「${label}」。总题 → 起笔定调 → 正文（可分段，勿 meta 标签）→ ${ending} 按【节奏提示】安排详略。\n\n`;
+  return `文言结构提示：本篇为「${label}」。
+${CLASSICAL_LAYOUT}
+【总题·硬性】biography 第一行必须是总题 alone（如「赵小军传」），第二行空行，第三行起才是正文；缺总题视为不合格。
+总题 → 起笔定调 → 正文（可分段，段间空行，勿 meta 标签）→ ${ending} 按【节奏提示】安排详略。\n\n`;
+}
+
+function getNarrativeStructureHint() {
+  return `纪实叙述结构提示：${NARRATIVE_LAYOUT}\n\n`;
+}
+
+function getLiteraryStructureHint() {
+  return `文学散文结构提示：${LITERARY_LAYOUT}\n\n`;
 }
 
 function getClassicalLengthInstruction(pick, length) {
+  const label = getClassicalStyleLabel(pick);
+  if (length === "adaptive") {
+    return `篇幅要求：用户已选择「遵照实际填写」。请根据素材自行决定篇幅，不设固定字数目标；素材少则简，多则展，宜密不宜水。本篇为「${label}」，体例须合该路子风。`;
+  }
   const key = pick?.main && CLASSICAL_LENGTH_BY_MAIN[pick.main] ? pick.main : "zhenchuan";
   const map = CLASSICAL_LENGTH_BY_MAIN[key];
   return map[length] || map.normal;
@@ -775,13 +889,25 @@ function getStyleInstruction(style, wuxiaTone, xuanhuanAuthorStyle, classicalPic
 }
 
 function getLengthInstruction(length, style, wuxiaTone, classicalPick, yanqingTone) {
+  const resolvedLength = length === "short" || length === "normal" ? length : "adaptive";
+
+  if (resolvedLength === "adaptive") {
+    if (style === "classical") {
+      return getClassicalLengthInstruction(classicalPick, "adaptive");
+    }
+    if (isLegendEntertainmentStyle(style, wuxiaTone, yanqingTone)) {
+      return LEGEND_LENGTH_INSTRUCTIONS.adaptive;
+    }
+    return LENGTH_INSTRUCTIONS.adaptive;
+  }
+
   if (style === "classical") {
-    return getClassicalLengthInstruction(classicalPick, length);
+    return getClassicalLengthInstruction(classicalPick, resolvedLength);
   }
   if (isLegendEntertainmentStyle(style, wuxiaTone, yanqingTone)) {
-    return LEGEND_LENGTH_INSTRUCTIONS[length] || LEGEND_LENGTH_INSTRUCTIONS.normal;
+    return LEGEND_LENGTH_INSTRUCTIONS[resolvedLength] || LEGEND_LENGTH_INSTRUCTIONS.normal;
   }
-  return LENGTH_INSTRUCTIONS[length] || LENGTH_INSTRUCTIONS.normal;
+  return LENGTH_INSTRUCTIONS[resolvedLength] || LENGTH_INSTRUCTIONS.normal;
 }
 
 function isFeaturedBiographyStyle(style, wuxiaTone, yanqingTone) {
@@ -791,21 +917,24 @@ function isFeaturedBiographyStyle(style, wuxiaTone, yanqingTone) {
 
 function getBiographySystemPrompt(style, wuxiaTone, yanqingTone) {
   const s = normalizeWritingStyleKey(style);
+  let base;
   if (s === "wuxia" && normalizeWuxiaTone(wuxiaTone) >= 67) {
-    return BIOGRAPHY_SYSTEM_PROMPT_WUXIA_LEGEND;
-  }
-  if (s === "yanqing") {
-    return isYanqingMelodrama(yanqingTone)
+    base = BIOGRAPHY_SYSTEM_PROMPT_WUXIA_LEGEND;
+  } else if (s === "yanqing") {
+    base = isYanqingMelodrama(yanqingTone)
       ? BIOGRAPHY_SYSTEM_PROMPT_YANQING_MELODRAMA
       : BIOGRAPHY_SYSTEM_PROMPT_YANQING;
+  } else if (style === "xuanhuan") {
+    base = BIOGRAPHY_SYSTEM_PROMPT_XUANHUAN_LEGEND;
+  } else if (style === "classical") {
+    base = BIOGRAPHY_SYSTEM_PROMPT_CLASSICAL;
+  } else {
+    base = BIOGRAPHY_SYSTEM_PROMPT;
   }
-  if (style === "xuanhuan") {
-    return BIOGRAPHY_SYSTEM_PROMPT_XUANHUAN_LEGEND;
+  if (isFigureMatchEnabled(style, wuxiaTone)) {
+    base = `${base}\n\n${FIGURE_MATCH_SYSTEM_APPEND}`;
   }
-  if (style === "classical") {
-    return BIOGRAPHY_SYSTEM_PROMPT_CLASSICAL;
-  }
-  return BIOGRAPHY_SYSTEM_PROMPT;
+  return base;
 }
 
 function getPersonInstruction(person) {
@@ -816,6 +945,12 @@ function getPersonInstruction(person) {
 }
 
 const { buildLegendPacingHint } = require("./legendPacing");
+const {
+  FIGURE_MATCH_SYSTEM_APPEND,
+  isFigureMatchEnabled,
+  getFigureMatchKind,
+  getFigureMatchUserAppend,
+} = require("./figureMatch");
 
 function buildBiographyUserPrompt({ source, material, style, length, person, truncated, wuxiaTone, yanqingTone }) {
   const normalizedStyle = normalizeWritingStyleKey(style);
@@ -823,7 +958,9 @@ function buildBiographyUserPrompt({ source, material, style, length, person, tru
   const materialLabel = truncated ? "素材（较长内容已做优先截取）" : "原始素材";
   const timelineHint =
     source === "timeline"
-      ? "写作结构提示：将时间轴节点重述为连贯散文，不要按节点编号或日期逐段罗列；可合并相邻节点。\n\n"
+      ? normalizedStyle === "classical"
+        ? "写作结构提示：时间轴素材须重述为连贯文言叙事；禁止逐节点分段；禁止段首「年X（YYYY）」「阶段名+（年份）」或干支括注公历；相邻节点宜合并；日期勿复制到段首。\n\n"
+        : "写作结构提示：将时间轴节点重述为连贯散文，不要按节点编号或日期逐段罗列，禁止各章首段复制节点日期起句；可合并相邻节点。\n\n"
       : "";
   const normalizedYanqingTone = normalizedStyle === "yanqing" ? normalizeYanqingTone(yanqingTone) : undefined;
   const yanqingIncludeEpilogue =
@@ -840,6 +977,10 @@ function buildBiographyUserPrompt({ source, material, style, length, person, tru
     structureHint = getXuanhuanStructureHint(xuanhuanAuthorStyle);
   } else if (normalizedStyle === "classical") {
     structureHint = getClassicalStructureHint(classicalPick);
+  } else if (normalizedStyle === "narrative") {
+    structureHint = getNarrativeStructureHint();
+  } else if (normalizedStyle === "literary") {
+    structureHint = getLiteraryStructureHint();
   }
 
   const pacingHint =
@@ -857,15 +998,29 @@ function buildBiographyUserPrompt({ source, material, style, length, person, tru
         })
       : "";
 
+  const figureKind = getFigureMatchKind(normalizedStyle, wuxiaTone);
+  const figureHint = figureKind
+    ? `\n\n${getFigureMatchUserAppend(figureKind, { classicalPick, material })}`
+    : "";
+  const figureMaterialLock =
+    figureKind === "historical"
+      ? `\n【史海知音·素材锁定】figureMatch 仅根据以下「${materialLabel}」中的事实匹配历史人物；不得阅读、引用、模仿上文 biography 的文风或意象；reasons 须能在下列素材中逐条对应。\n\n`
+      : figureKind === "jinyong"
+        ? `\n【江湖知音·素材锁定】figureMatch 仅根据以下「${materialLabel}」中的事实匹配金庸角色；不得依据 biography 的武侠修辞选人。\n\n`
+        : "";
+  const outputInstruction = figureKind
+    ? `请根据以下${materialLabel}完成 biography 与 figureMatch（见上方知音匹配协议）；biography 依文风要求撰写，figureMatch 仅依下列素材事实匹配；仅输出一个 JSON 对象，顶层键 biography（传记正文纯文本）与 figureMatch（对象），JSON 外不要任何文字：`
+    : `请根据以下${materialLabel}撰写一篇完整的个人传记（正文不要输出 JSON、不要列提纲，直接输出传记正文）：`;
+
   return `${sourceHint}
 
 ${getPersonInstruction(person || "third")}
 文风要求：${getStyleInstruction(normalizedStyle, wuxiaTone, xuanhuanAuthorStyle, classicalPick, normalizedYanqingTone)}
 篇幅要求：${getLengthInstruction(length, normalizedStyle, wuxiaTone, classicalPick, normalizedYanqingTone)}
 
-${timelineHint}${structureHint}${pacingHint}请根据以下${materialLabel}撰写一篇完整的个人传记（正文不要输出 JSON、不要列提纲，直接输出传记正文）：
-
-${material}`;
+${timelineHint}${structureHint}${pacingHint}${figureHint}
+${outputInstruction}
+${figureMaterialLock}${material}`;
 }
 
 function buildSummarizeUserPrompt({ source, material }) {
@@ -909,4 +1064,6 @@ module.exports = {
   isFeaturedBiographyStyle,
   pickXuanhuanAuthorStyle,
   pickClassicalStyle,
+  isFigureMatchEnabled,
+  getFigureMatchKind,
 };

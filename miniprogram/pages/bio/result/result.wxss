@@ -138,6 +138,15 @@
   box-sizing: border-box;
 }
 
+.share-hint {
+  width: 100%;
+  font-size: 22rpx;
+  color: #8b7355;
+  line-height: 1.5;
+  text-align: center;
+  margin-top: -8rpx;
+}
+
 .action-btn::after {
   border: none;
 }
@@ -148,6 +157,132 @@
   top: 0;
   width: 750px;
   height: 12000px;
+}
+
+.resonance-panel {
+  margin: 24rpx 0 0;
+  padding: 0 4rpx;
+}
+
+.resonance-teaser,
+.resonance-card {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 32rpx 28rpx;
+  box-shadow: 0 4rpx 24rpx rgba(61, 43, 31, 0.08);
+  border: 1rpx solid #e8dfd3;
+}
+
+.resonance-teaser-title,
+.resonance-card-header {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #8b6914;
+}
+
+.resonance-teaser-desc {
+  font-size: 24rpx;
+  color: #8b7355;
+  margin-top: 12rpx;
+  line-height: 1.6;
+}
+
+.resonance-reveal-btn {
+  width: 100%;
+  height: 80rpx;
+  line-height: 80rpx;
+  margin-top: 24rpx;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  background: linear-gradient(135deg, #c4a574 0%, #8b6914 100%);
+  color: #fff;
+  border: none;
+  padding: 0;
+}
+
+.resonance-reveal-btn::after {
+  border: none;
+}
+
+.resonance-name {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #3d2b1f;
+  margin-top: 16rpx;
+}
+
+.resonance-alias,
+.resonance-era {
+  font-size: 24rpx;
+  color: #8b7355;
+  margin-top: 8rpx;
+}
+
+.resonance-tagline {
+  font-size: 26rpx;
+  color: #6b5344;
+  margin-top: 12rpx;
+  line-height: 1.6;
+}
+
+.resonance-section {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #8b6914;
+  margin-top: 28rpx;
+  margin-bottom: 8rpx;
+}
+
+.resonance-reason,
+.resonance-story,
+.resonance-bridge {
+  font-size: 26rpx;
+  color: #3d2b1f;
+  line-height: 1.75;
+  margin-bottom: 6rpx;
+}
+
+.resonance-bridge {
+  color: #5c4a3a;
+}
+
+.resonance-disclaimer {
+  font-size: 22rpx;
+  color: #a89580;
+  margin-top: 24rpx;
+  line-height: 1.5;
+}
+
+.resonance-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-top: 28rpx;
+}
+
+.resonance-btn {
+  width: 100%;
+  height: 76rpx;
+  line-height: 76rpx;
+  border-radius: 38rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  background: #fff;
+  color: #8b6914;
+  border: 2rpx solid #c4a574;
+  padding: 0;
+  margin: 0;
+}
+
+.resonance-btn::after {
+  border: none;
+}
+
+.resonance-btn.primary {
+  background: linear-gradient(135deg, #c4a574 0%, #8b6914 100%);
+  color: #fff;
+  border: none;
 }
 
 .action-btn.primary {

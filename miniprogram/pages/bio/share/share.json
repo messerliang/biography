@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "传记分享",
+  "usingComponents": {
+    "bio-content": "/components/bio-content/index"
+  }
+}

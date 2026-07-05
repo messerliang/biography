@@ -7,6 +7,8 @@
     "pages/bio/chat-options/chat-options",
     "pages/bio/video/video",
     "pages/bio/result/result",
+    "pages/bio/share/share",
+    "pages/bio/resonance/resonance",
     "pages/bio/history/history",
     "pages/bio/timeline/timeline",
     "pages/bio/timeline-options/timeline-options",

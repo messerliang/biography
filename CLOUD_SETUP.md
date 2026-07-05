@@ -9,8 +9,9 @@
 
 | 云函数 | 说明 |
 |--------|------|
-| `generateBiography` | 传记生成（含素材摘要、内容安全、速率限制） |
+| `generateBiography` | 传记生成（含素材摘要、内容安全、速率限制；文言/武侠传奇档含知音匹配） |
 | `chatInterview` | AI 访谈对话 |
+| `bioShare` | 传记分享、知音卡片分享、小程序码 |
 
 公共模块源码位于 `cloudfunctions/common/`。**微信上传云函数时不会带上兄弟目录**，因此各云函数目录内各有 `common/` 副本（通过 `require('./common/...')` 引用）。
 
@@ -40,6 +41,8 @@ cd cloudfunctions
 在云开发控制台创建以下集合（权限建议：仅云函数可写）：
 
 - `bio_rate_limit`：接口速率限制计数
+- `bio_shares`：传记分享落地页
+- `bio_resonances`：知音卡片分享落地页
 - `bio_audit_log`（可选）：加密审计日志，`ENABLE_PII_AUDIT=true` 时使用
 
 ## 5. 部署步骤

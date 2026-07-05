@@ -2,11 +2,32 @@ const {
   getBiographyList,
   getBiographyById,
   deleteBiography,
+  updateBiographyShareId,
+  updateBiographyResonance,
   getStyleLabel,
   getSourceLabel,
   getSampleBiographies,
 } = require("../../../utils/bio");
 const { exportAndSaveBiography } = require("../../../utils/exportBiography");
+const {
+  publishShareBio,
+  buildSharePath,
+  buildShareTitle,
+} = require("../../../utils/shareBio");
+const {
+  getResonanceMeta,
+  publishResonanceBio,
+  buildResonancePath,
+  buildResonanceShareTitle,
+  isUserCancelError,
+  getResonanceErrorMessage,
+} = require("../../../utils/resonance");
+const {
+  saveResonanceCard,
+  exportResonanceForShare,
+  shareResonanceImage,
+} = require("../../../utils/exportResonanceCard");
+const { extractSubjectNameFromTitle } = require("../../../utils/bioContentFormat");
 
 const FONT_SIZE_MAP = {
   small: 26,
@@ -42,7 +63,11 @@ Page({
     fontSize: FONT_SIZE_MAP.medium,
     lineHeight: 2,
     exporting: false,
+    resonanceSaving: false,
+    resonanceSharing: false,
   },
+
+  _shareResonanceMode: false,
 
   onShow() {
     this.loadList();
@@ -101,14 +126,20 @@ Page({
   viewDetail(e) {
     const item = getBiographyById(e.currentTarget.dataset.id);
     if (item) {
+      const figureMatch = item.figureMatch?.enabled ? item.figureMatch : null;
       this.setData({
         showDetail: true,
         detail: {
           ...item,
-          styleLabel: getStyleLabel(item.style),
+          subjectName: extractSubjectNameFromTitle(item.title),
+          styleLabel: getStyleLabel(item.style, { wuxiaTone: item.wuxiaTone, yanqingTone: item.yanqingTone }),
           sourceLabel: getSourceLabel(item.source),
+          figureMatch,
+          figureMatchRevealed: !!item.figureMatchRevealed,
+          resonanceMeta: figureMatch ? getResonanceMeta(figureMatch.kind) : null,
         },
       });
+      this.prepareShareForDetail(item);
     }
   },
 
@@ -138,14 +169,104 @@ Page({
     });
   },
 
+  async prepareShareForDetail(detail) {
+    if (!detail || detail.isSample || detail.shareId) return detail?.shareId;
+    try {
+      const res = await publishShareBio({
+        title: detail.title,
+        content: detail.content,
+        styleLabel: detail.styleLabel || getStyleLabel(detail.style),
+        sourceLabel: detail.sourceLabel || getSourceLabel(detail.source),
+        style: detail.style,
+      });
+      updateBiographyShareId(detail.id, res.shareId);
+      if (this.data.detail?.id === detail.id) {
+        this.setData({ detail: { ...this.data.detail, shareId: res.shareId } });
+      }
+      return res.shareId;
+    } catch (err) {
+      console.error(err);
+      return "";
+    }
+  },
+
+  revealDetailFigureMatch() {
+    const detail = this.data.detail;
+    if (!detail?.figureMatch) return;
+    updateBiographyResonance(detail.id, { figureMatchRevealed: true });
+    this.setData({ detail: { ...detail, figureMatchRevealed: true } });
+  },
+
+  async ensureDetailResonancePublished() {
+    const detail = this.data.detail;
+    if (!detail?.figureMatch) return "";
+    if (detail.resonanceId) return detail.resonanceId;
+    const res = await publishResonanceBio({
+      bioTitle: detail.title,
+      figureMatch: detail.figureMatch,
+    });
+    updateBiographyResonance(detail.id, { resonanceId: res.resonanceId });
+    this.setData({ detail: { ...this.data.detail, resonanceId: res.resonanceId } });
+    return res.resonanceId;
+  },
+
+  async saveDetailResonanceCard() {
+    const detail = this.data.detail;
+    if (!detail?.figureMatchRevealed || !detail?.figureMatch || this.data.resonanceSaving) return;
+    this.setData({ resonanceSaving: true });
+    try {
+      await saveResonanceCard({
+        figureMatch: detail.figureMatch,
+        bioTitle: detail.title,
+        kind: detail.figureMatch.kind,
+      });
+      wx.showToast({ title: "已保存到相册", icon: "success" });
+    } catch (err) {
+      if (!isUserCancelError(err)) {
+        console.error(err);
+        wx.showToast({ title: "保存失败", icon: "none" });
+      }
+    } finally {
+      this.setData({ resonanceSaving: false });
+    }
+  },
+
+  prepareDetailResonanceShare() {
+    this._shareResonanceMode = true;
+    if (this.data.detail?.figureMatchRevealed) {
+      this.ensureDetailResonancePublished().catch(console.error);
+    }
+  },
+
+  async shareDetailResonanceImage() {
+    const detail = this.data.detail;
+    if (!detail?.figureMatchRevealed || !detail?.figureMatch || this.data.resonanceSharing) return;
+    this.setData({ resonanceSharing: true });
+    try {
+      const filePath = await exportResonanceForShare({
+        figureMatch: detail.figureMatch,
+        bioTitle: detail.title,
+        kind: detail.figureMatch.kind,
+      });
+      await shareResonanceImage(filePath);
+    } catch (err) {
+      if (isUserCancelError(err)) return;
+      console.error(err);
+      wx.showToast({ title: getResonanceErrorMessage(err) || "请保存图片后发送", icon: "none" });
+    } finally {
+      this.setData({ resonanceSharing: false });
+    }
+  },
+
   exportDetail() {
     if (this.data.exporting || !this.data.detail.content) return;
     this.setData({ exporting: true });
+    const detail = this.data.detail;
     exportAndSaveBiography({
-      title: this.data.detail.title,
-      content: this.data.detail.content,
-      styleLabel: this.data.detail.styleLabel,
-      sourceLabel: this.data.detail.sourceLabel,
+      title: detail.title,
+      content: detail.content,
+      styleLabel: detail.styleLabel,
+      sourceLabel: detail.sourceLabel,
     })
       .then(() => wx.showToast({ title: "已保存到相册", icon: "success" }))
       .catch((err) => {
@@ -178,14 +299,27 @@ Page({
 
   onShareAppMessage() {
     const { detail } = this.data;
-    if (detail && detail.title && this.data.showDetail) {
+    if (this._shareResonanceMode && detail?.figureMatchRevealed && detail?.figureMatch) {
+      this._shareResonanceMode = false;
+      if (!detail.resonanceId) {
+        this.ensureDetailResonancePublished();
+      }
       return {
-        title: detail.title,
-        path: "/pages/bio/home/home",
+        title: buildResonanceShareTitle(detail.title, detail.figureMatch),
+        path: buildResonancePath(detail.resonanceId),
+      };
+    }
+    if (detail && detail.title && this.data.showDetail && !detail.isSample) {
+      if (!detail.shareId) {
+        this.prepareShareForDetail(detail);
+      }
+      return {
+        title: buildShareTitle(detail.title, detail.content),
+        path: buildSharePath(detail.shareId),
       };
     }
     return {
-      title: "我的人生传记",
+      title: "人生传记 · 记录故事，传承记忆",
       path: "/pages/bio/home/home",
     };
   },

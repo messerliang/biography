@@ -1,0 +1,37 @@
+<view class="page">
+  <view class="loading-wrap" wx:if="{{loading}}">
+    <text class="loading-text">正在加载……</text>
+  </view>
+
+  <view class="error-wrap" wx:elif="{{error}}">
+    <text class="error-title">{{error}}</text>
+    <button class="cta-btn primary" bindtap="goHome">返回首页</button>
+  </view>
+
+  <block wx:elif="{{resonance}}">
+    <view class="card">
+      <view class="card-header">{{meta.cardHeader}}</view>
+      <view class="card-name">{{resonance.name}}</view>
+      <view class="card-alias" wx:if="{{resonance.alias}}">{{resonance.alias}}</view>
+      <view class="card-era" wx:if="{{resonance.era}}">{{resonance.era}}</view>
+      <view class="card-tagline" wx:if="{{resonance.tagline}}">「{{resonance.tagline}}」</view>
+
+      <view class="section-title">为何相通</view>
+      <view class="reason" wx:for="{{resonance.reasons}}" wx:key="*this">· {{item}}</view>
+
+      <view class="section-title">{{meta.storyTitle}}</view>
+      <view class="story">{{resonance.story}}</view>
+
+      <view class="section-title">与《{{resonance.bioTitle}}》的呼应</view>
+      <view class="bridge">{{resonance.bridge}}</view>
+
+      <view class="disclaimer">{{resonance.disclaimer}}</view>
+    </view>
+
+    <view class="footer">
+      <view class="footer-tip">读完这个呼应，你也想记录自己的人生吗？</view>
+      <button class="cta-btn primary" bindtap="goHome">我也写一篇</button>
+      <button class="cta-btn" open-type="share">分享给好友</button>
+    </view>
+  </block>
+</view>

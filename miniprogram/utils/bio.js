@@ -405,12 +405,12 @@ function getBioPickerState(styleKey, lengthKey) {
 function getLengthInstruction(length) {
   const key = normalizeLength(length);
   if (key === "short") {
-    return "篇幅要求：全文控制在 300–500 字，精炼扼要，保留最重要的事实与情感，不要超出上限。";
+    return "篇幅要求：用户已选择「短篇」。全文控制在 300–500 字，精炼扼要，保留最重要的事实与情感，不要超出上限。";
   }
   if (key === "normal") {
-    return "篇幅要求：全文控制在 800–1000 字，结构完整、详略得当，不要明显超出该范围。";
+    return "篇幅要求：用户已选择「普通」。全文控制在 800–1000 字，结构完整、详略得当，不要明显超出该范围。";
   }
-  return "篇幅要求：根据用户提供素材的信息量灵活把握篇幅；素材少则简明扼要（可短至数百字），素材丰富则充分展开；不人为注水或过度压缩，以如实覆盖用户内容为准。";
+  return "篇幅要求：用户已选择「遵照实际填写」。请根据素材信息量灵活决定篇幅；素材少则简明（可短至数百字），素材丰富则充分展开；不人为注水或过度压缩，以如实覆盖用户内容为准。";
 }
 
 function getWritingRequirements(style, length) {
@@ -750,7 +750,11 @@ async function streamBiography({
       onStatus(result.meta?.truncated ? "素材已精简，撰写完成" : "撰写完成");
     }
 
-    return await playTypingEffect(result.content || "", onChunk);
+    const content = await playTypingEffect(result.content || "", onChunk);
+    return {
+      content,
+      figureMatch: result.figureMatch || null,
+    };
   } catch (err) {
     if (retryCount > 0 && isTimeoutError(err)) {
       if (onChunk) onChunk("");
@@ -808,12 +812,42 @@ function saveBiography(record) {
   if (normalizeWritingStyle(item.style) === "yanqing" && record.yanqingTone !== undefined) {
     item.style = "yanqing";
     item.yanqingTone = normalizeYanqingTone(record.yanqingTone);
-  } else if (item.style === "qiongyao") {
+  }
+  if (item.style === "qiongyao") {
     item.style = "yanqing";
+  }
+  if (record.shareId) {
+    item.shareId = record.shareId;
+  }
+  if (record.figureMatch && record.figureMatch.enabled) {
+    item.figureMatch = record.figureMatch;
+    item.figureMatchRevealed = !!record.figureMatchRevealed;
+  }
+  if (record.resonanceId) {
+    item.resonanceId = record.resonanceId;
   }
   list.unshift(item);
   wx.setStorageSync(STORAGE_KEY, list.slice(0, 50));
   return item;
+}
+
+function updateBiographyShareId(id, shareId) {
+  if (!id || !shareId) return;
+  const list = getBiographyList();
+  const idx = list.findIndex((item) => item.id === id);
+  if (idx < 0) return;
+  list[idx].shareId = shareId;
+  wx.setStorageSync(STORAGE_KEY, list);
+}
+
+function updateBiographyResonance(id, { resonanceId, figureMatchRevealed } = {}) {
+  if (!id) return;
+  const list = getBiographyList();
+  const idx = list.findIndex((item) => item.id === id);
+  if (idx < 0) return;
+  if (resonanceId) list[idx].resonanceId = resonanceId;
+  if (figureMatchRevealed !== undefined) list[idx].figureMatchRevealed = figureMatchRevealed;
+  wx.setStorageSync(STORAGE_KEY, list);
 }
 
 function deleteBiography(id) {
@@ -1023,6 +1057,8 @@ module.exports = {
   getBiographyList,
   saveBiography,
   deleteBiography,
+  updateBiographyShareId,
+  updateBiographyResonance,
   getBiographyById,
   saveFormDraft,
   getFormDraft,

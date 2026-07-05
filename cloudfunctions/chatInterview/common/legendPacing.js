@@ -75,15 +75,19 @@ function buildClassicalPacingHint(ctx, classicalPick) {
   if (main === "wanming") detailHint = "段落宜短；抓取 2–3 个有趣或梦忆瞬间。";
   if (main === "tangsong") detailHint = "一事一技宜细写 1–2 处；论说点睛一句即可。";
 
+  const antiNodeHint =
+    "禁止一段一节点、禁止段首「年X（YYYY）」或「阶段名+（年份）」；须重述为场景叙事，勿逐条翻译素材。";
+
   if (!ctx) {
-    return `【节奏提示·文言${label}】${detailHint} 句法须有文言质感；今物今词可保留，勿白话流水句。\n\n`;
+    return `【节奏提示·文言${label}】${detailHint} 句法须有文言质感；今物今词可保留，勿白话流水句。${antiNodeHint}\n\n`;
   }
 
   return `【节奏提示·文言${label}·系统自动判定，勿向用户确认】
-1. 分段/节数随素材：约 ${ctx.chapterMax} 段大事略 + 收束（素材少可更短）；${ctx.mergeHint}
-2. 重点阶段：${ctx.keyLabels.join("、")}——可稍细写，其余从简或快切。
+1. 分段/节数随素材：约 ${ctx.chapterMax} 段叙述（非一节点一段）；${ctx.mergeHint}
+2. 下列阶段信息较丰，宜在叙述中自然融入其细节，勿以其名为段首、勿机械一段对应一节点：${ctx.keyLabels.join("、")}
 3. ${detailHint}
-4. 相邻两段禁止同起笔、同收束模板。
+4. 相邻两段禁止同起笔、同收束模板；素材节点日期仅供排序，禁止复制到段首（含干支括注公历）。
+5. ${antiNodeHint}
 
 `;
 }
@@ -102,10 +106,7 @@ function computePacingContext(material) {
   if (segments.length <= 2) chapterMax = 1;
   else if (segments.length <= 4) chapterMax = Math.min(chapterMax, 2);
 
-  const keyLabels = fallbackKeys.map((s) => {
-    const datePart = s.date ? `（${s.date}）` : "";
-    return `「${s.label}」${datePart}`;
-  });
+  const keyLabels = fallbackKeys.map((s) => `「${s.label}」`);
 
   const mergeHint =
     thin.length > 0
@@ -134,7 +135,7 @@ function buildDefaultPacingHint(style, ctx) {
 1. 建议章回数：约 ${ctx.chapterMax} 章正文 + 终章（素材少时可仅 1 章 + 终章）；${ctx.mergeHint}
 2. 重点细写章（固定规则：素材信息最丰富的 2 个阶段）：${ctx.keyLabels.join("、")}——仅此 2 章可安排完整细写场景（每章 1–2 段，80–150 字/段）；其余章节以叙事推进、对话或快切为主，禁止章章同密度。
 3. 全书累计：细写段 3–4 段、引号对话 ≥3 段、${tensionLabel} 2–3 处即可，勿每章机械凑齐。
-4. 相邻两章禁止同开篇（忌连续「环境长句起笔」）与同收束（忌连续「意象金句收尾」）；终章禁止再上大段细写。
+4. 相邻两章禁止同开篇（忌连续「环境长句起笔」或「XXXX年/月起句」）与同收束（忌连续「意象金句收尾」）；终章禁止再上大段细写。素材节点日期仅供排序，禁止复制到章首起句。
 
 `;
 }
@@ -148,7 +149,7 @@ function buildYanqingPacingHint(ctx) {
 1. 建议分幕数：约 ${ctx.chapterMax} 幕正文 + 终章；${ctx.mergeHint} 幕名须带情感场景（如雨夜、车站、老院），禁「入道、历练、破关」类词。
 2. 重点细写幕：${ctx.keyLabels.join("、")}——仅此 2 幕可安排完整关系细写（每幕 1–2 段）；其余幕以对话、闪回、书信体或季节快切推进。
 3. 全书累计：关系细写 3–4 段；引号对话 ≥4；内心独白 ≥3；情感张力点 ≥3；信物/场景呼应 ≥1。
-4. 写法池至少 3 种（对话推进 / 回忆闪回 / 书信便签 / 单场景细写 / 物件快切），相邻两幕禁止同起笔与同收束。
+4. 写法池至少 3 种（对话推进 / 回忆闪回 / 书信便签 / 单场景细写 / 物件快切），相邻两幕禁止同起笔（含禁止各幕首段「XXXX年/月」起句）与同收束。
 5. 禁止江湖语汇、古龙短句、关隘/侠气比喻；终章可加强虐恋浓度但须扣素材人物。
 
 `;
@@ -170,7 +171,7 @@ function buildXuanhuanPacingHint(ctx, authorStyle) {
 1. 建议章回数：约 ${ctx.chapterMax} 章正文 + 终章；${ctx.mergeHint} 章名从素材取意象，禁灵根/筑基/炼器/化神式流水线。
 2. 重点悟境章：${ctx.keyLabels.join("、")}——仅此 2 章可安排完整内外对照细写（每章 1–2 段）；其余章按${styleLabel}写法池推进。
 3. 全书累计：内外对照细写 3–4 段；引号对话 ≥3；**心魔劫/破境瞬间 ≥2 处**（各须写具体事件、压力、动摇、破境一瞬，不可概括）；天地—人间对照 ≥4；道号/修名呼应 ≥2。
-4. 相邻两章禁止同模板起笔/收束；禁止连续两章同一式「境界突破」。
+4. 相邻两章禁止同模板起笔/收束（含禁止各章首段「XXXX年/月」起句）；禁止连续两章同一式「境界突破」。
 5. 开卷语与第一章首段同频；终章宿命收束，末句最强悟道，禁止道评块与禁用套话。${styleNote}
 
 `;

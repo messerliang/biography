@@ -1,0 +1,29 @@
+<view class="page">
+  <view class="header" wx:if="{{!loading && !error && share}}">
+    <view class="title">{{share.title}}</view>
+    <view class="meta">{{share.styleLabel}}{{share.sourceLabel ? ' · ' + share.sourceLabel : ''}}</view>
+  </view>
+
+  <view class="loading-wrap" wx:if="{{loading}}">
+    <text class="loading-text">正在加载传记……</text>
+  </view>
+
+  <view class="error-wrap" wx:elif="{{error}}">
+    <text class="error-title">{{error}}</text>
+    <text class="error-desc" wx:if="{{isLanding}}">扫码进入「人生传记」，记录你的故事</text>
+    <button class="cta-btn" bindtap="goHome">{{isLanding ? '开始写我的传记' : '返回首页'}}</button>
+  </view>
+
+  <block wx:elif="{{share}}">
+    <scroll-view class="content-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+      <view class="content-box">
+        <bio-content content="{{share.content}}" font-size="{{30}}" />
+      </view>
+    </scroll-view>
+
+    <view class="footer">
+      <view class="footer-tip">读完这个故事，你也想记录自己的人生吗？</view>
+      <button class="cta-btn primary" bindtap="goHome">我也写一篇</button>
+    </view>
+  </block>
+</view>

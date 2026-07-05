@@ -322,10 +322,13 @@
 
 .sort-btn {
   flex: 1;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 16rpx;
   font-size: 24rpx;
   color: #8b6914;
+  line-height: 1.2;
 }
 
 .sort-btn:active {
@@ -541,13 +544,16 @@
 }
 
 .node-delete {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 18rpx;
   font-size: 24rpx;
   color: #a89580;
   border-top: 1rpx solid #f0ebe3;
   background: linear-gradient(180deg, #fff 0%, #fdfbf8 100%);
   letter-spacing: 1rpx;
+  line-height: 1.2;
 }
 
 .node-delete:active {
@@ -564,14 +570,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  margin: 0;
+  padding: 0 52rpx;
+  height: 72rpx;
   background: linear-gradient(135deg, #fff 0%, #fdfbf8 100%);
   color: #8b6914;
   font-size: 28rpx;
   font-weight: 600;
   border: 2rpx dashed rgba(196, 165, 116, 0.55);
   border-radius: 44rpx;
-  padding: 22rpx 52rpx;
-  line-height: 1.4;
+  line-height: 1.2;
+  box-sizing: border-box;
   box-shadow: 0 4rpx 16rpx rgba(196, 165, 116, 0.1);
 }
 
@@ -699,7 +708,7 @@
   font-size: 30rpx;
   font-weight: 600;
   border: none;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   line-height: 1.2;

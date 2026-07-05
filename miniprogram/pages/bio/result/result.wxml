@@ -23,7 +23,35 @@
 
   <scroll-view class="content-scroll" scroll-y enhanced show-scrollbar="{{false}}">
     <view class="content-box">
-      <bio-content content="{{content}}" font-size="{{30}}" show-cursor="{{generating}}" />
+      <bio-content content="{{content}}" subject-name="{{subjectName}}" font-size="{{30}}" show-cursor="{{generating}}" />
+    </view>
+
+    <view class="resonance-panel" wx:if="{{hasFigureMatch && !generating && !generateFailed}}">
+      <view class="resonance-teaser" wx:if="{{!figureMatchRevealed}}">
+        <view class="resonance-teaser-title">{{resonanceMeta.label}}</view>
+        <view class="resonance-teaser-desc">AI 已为您找到一位气质相近的{{resonanceMeta.kind === 'jinyong' ? '江湖人物' : '历史人物'}}，点击揭晓</view>
+        <button class="resonance-reveal-btn" bindtap="revealFigureMatch">{{resonanceMeta.revealBtn}}</button>
+      </view>
+
+      <view class="resonance-card" wx:else>
+        <view class="resonance-card-header">{{resonanceMeta.cardHeader}}</view>
+        <view class="resonance-name">{{figureMatch.name}}</view>
+        <view class="resonance-alias" wx:if="{{figureMatch.alias}}">{{figureMatch.alias}}</view>
+        <view class="resonance-era" wx:if="{{figureMatch.era}}">{{figureMatch.era}}</view>
+        <view class="resonance-tagline" wx:if="{{figureMatch.tagline}}">「{{figureMatch.tagline}}」</view>
+        <view class="resonance-section">为何相通</view>
+        <view class="resonance-reason" wx:for="{{figureMatch.reasons}}" wx:key="*this">· {{item}}</view>
+        <view class="resonance-section">{{resonanceMeta.storyTitle}}</view>
+        <view class="resonance-story">{{figureMatch.story}}</view>
+        <view class="resonance-section">与您的呼应</view>
+        <view class="resonance-bridge">{{figureMatch.bridge}}</view>
+        <view class="resonance-disclaimer">{{figureMatch.disclaimer}}</view>
+        <view class="resonance-actions">
+          <button class="resonance-btn" bindtap="saveResonanceCardTap" loading="{{resonanceSaving}}">保存知音卡片</button>
+          <button class="resonance-btn" bindtap="shareResonanceImageTap" loading="{{resonanceSharing}}">分享图片</button>
+          <button class="resonance-btn primary" open-type="share" bindtap="prepareResonanceShareTap">分享小程序卡片</button>
+        </view>
+      </view>
     </view>
   </scroll-view>
 
@@ -31,6 +59,7 @@
     <view class="error-tip" wx:if="{{generateFailed}}">{{errorMessage}}</view>
     <button class="action-btn secondary" wx:if="{{generateFailed}}" bindtap="retryGenerate">重新生成</button>
     <button class="action-btn secondary" open-type="share" wx:if="{{content && !generateFailed}}">分享给好友</button>
+    <view class="share-hint" wx:if="{{content && !generateFailed}}">分享后好友可阅读全文；长图底部码可扫码进入首页创作</view>
     <button class="action-btn secondary" bindtap="exportContent" loading="{{exporting}}" wx:if="{{content}}">导出长图</button>
     <button class="action-btn secondary" bindtap="copyContent" wx:if="{{content}}">复制全文</button>
     <button class="action-btn primary" bindtap="saveContent" wx:if="{{content && !generateFailed && !saved}}">
@@ -41,3 +70,4 @@
 </view>
 
 <canvas canvas-id="exportCanvas" class="export-canvas"></canvas>
+<canvas canvas-id="resonanceCanvas" class="export-canvas"></canvas>

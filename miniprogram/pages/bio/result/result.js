@@ -11,10 +11,29 @@ const {
   getGenerateErrorMessage,
 } = require("../../../utils/bio");
 const { exportAndSaveBiography } = require("../../../utils/exportBiography");
+const {
+  publishShareBio,
+  buildSharePath,
+  buildShareTitle,
+} = require("../../../utils/shareBio");
+const {
+  getResonanceMeta,
+  publishResonanceBio,
+  buildResonancePath,
+  buildResonanceShareTitle,
+  isUserCancelError,
+  getResonanceErrorMessage,
+} = require("../../../utils/resonance");
+const {
+  saveResonanceCard,
+  exportResonanceForShare,
+  shareResonanceImage,
+} = require("../../../utils/exportResonanceCard");
 
 Page({
   data: {
     title: "我的人生传记",
+    subjectName: "",
     content: "",
     generating: true,
     generateFailed: false,
@@ -22,6 +41,8 @@ Page({
     statusText: "",
     saved: false,
     exporting: false,
+    shareId: "",
+    sharePublishing: false,
     source: "form",
     style: "narrative",
     length: "normal",
@@ -29,9 +50,19 @@ Page({
     lengthLabel: "",
     sourceLabel: "",
     rawData: null,
+    hasFigureMatch: false,
+    figureMatch: null,
+    figureMatchRevealed: false,
+    resonanceMeta: null,
+    resonanceId: "",
+    resonanceSaving: false,
+    resonanceSharing: false,
   },
 
   generateParams: null,
+  _figureMatch: null,
+  _resonanceId: "",
+  _shareResonanceMode: false,
 
   onLoad(options) {
     let params = null;
@@ -76,9 +107,15 @@ Page({
                 ? "音频口述传记"
                 : "我的人生传记";
 
+      const subjectName =
+        params.data?.subjectName?.trim() ||
+        params.data?.name?.trim() ||
+        "";
+
       this.generateParams = params;
       this.setData({
         title,
+        subjectName,
         source: params.source,
         style,
         length,
@@ -92,6 +129,10 @@ Page({
         statusText: "",
         saved: false,
         content: "",
+        hasFigureMatch: false,
+        figureMatch: null,
+        figureMatchRevealed: false,
+        resonanceMeta: null,
       });
 
       this.startGenerate(params);
@@ -122,7 +163,7 @@ Page({
   async startGenerate(params) {
     this.disableLeaveConfirm();
     try {
-      await streamBiography({
+      const genResult = await streamBiography({
         source: params.source,
         data: params.data,
         style: params.style || "narrative",
@@ -137,8 +178,21 @@ Page({
           this.setData({ content: fullText });
         },
       });
-      this.setData({ generating: false, generateFailed: false, errorMessage: "", statusText: "" });
+      const figureMatch = genResult.figureMatch;
+      const hasFigureMatch = !!(figureMatch && figureMatch.enabled);
+      this._figureMatch = figureMatch;
+      this.setData({
+        generating: false,
+        generateFailed: false,
+        errorMessage: "",
+        statusText: "",
+        figureMatch: hasFigureMatch ? figureMatch : null,
+        hasFigureMatch,
+        figureMatchRevealed: false,
+        resonanceMeta: hasFigureMatch ? getResonanceMeta(figureMatch.kind) : null,
+      });
       this.enableLeaveConfirm();
+      this.prepareShare();
     } catch (err) {
       console.error(err);
       const errorMessage = getGenerateErrorMessage(err);
@@ -161,14 +215,99 @@ Page({
 
   retryGenerate() {
     if (!this.generateParams) return;
+    this._figureMatch = null;
     this.setData({
       generating: true,
       generateFailed: false,
       errorMessage: "",
       saved: false,
       content: "",
+      hasFigureMatch: false,
+      figureMatch: null,
+      figureMatchRevealed: false,
+      resonanceMeta: null,
     });
     this.startGenerate(this.generateParams);
+  },
+
+  revealFigureMatch() {
+    if (!this.data.figureMatch) return;
+    this.setData({ figureMatchRevealed: true });
+  },
+
+  async ensureResonancePublished() {
+    const figureMatch = this._figureMatch || this.data.figureMatch;
+    if (!figureMatch) return "";
+    if (this._resonanceId || this.data.resonanceId) return this._resonanceId || this.data.resonanceId;
+    const res = await publishResonanceBio({
+      bioTitle: this.data.title,
+      figureMatch,
+      resonanceId: this._resonanceId,
+    });
+    this._resonanceId = res.resonanceId;
+    this.setData({ resonanceId: res.resonanceId });
+    return res.resonanceId;
+  },
+
+  async saveResonanceCardTap() {
+    if (!this.data.figureMatchRevealed || !this.data.figureMatch || this.data.resonanceSaving) return;
+    this.setData({ resonanceSaving: true });
+    try {
+      await saveResonanceCard({
+        figureMatch: this.data.figureMatch,
+        bioTitle: this.data.title,
+        kind: this.data.figureMatch.kind,
+      });
+      wx.showToast({ title: "已保存到相册", icon: "success" });
+    } catch (err) {
+      if (!isUserCancelError(err)) {
+        console.error(err);
+        wx.showToast({ title: "保存失败", icon: "none" });
+      }
+    } finally {
+      this.setData({ resonanceSaving: false });
+    }
+  },
+
+  async prepareResonanceShareTap() {
+    this._shareResonanceMode = true;
+    if (!this.data.figureMatchRevealed) return;
+    try {
+      await this.ensureResonancePublished();
+    } catch (err) {
+      const tip = getResonanceErrorMessage(err);
+      if (tip) wx.showToast({ title: tip, icon: "none", duration: 3200 });
+    }
+  },
+
+  async shareResonanceImageTap() {
+    if (!this.data.figureMatchRevealed || !this.data.figureMatch || this.data.resonanceSharing) return;
+    this.setData({ resonanceSharing: true });
+    try {
+      const filePath = await exportResonanceForShare({
+        figureMatch: this.data.figureMatch,
+        bioTitle: this.data.title,
+        kind: this.data.figureMatch.kind,
+      });
+      await shareResonanceImage(filePath);
+    } catch (err) {
+      if (isUserCancelError(err)) return;
+      console.error(err);
+      try {
+        await saveResonanceCard({
+          figureMatch: this.data.figureMatch,
+          bioTitle: this.data.title,
+          kind: this.data.figureMatch.kind,
+        });
+        wx.showToast({ title: "已存相册，可发送图片", icon: "none" });
+      } catch (e2) {
+        if (!isUserCancelError(e2)) {
+          wx.showToast({ title: "分享失败", icon: "none" });
+        }
+      }
+    } finally {
+      this.setData({ resonanceSharing: false });
+    }
   },
 
   copyContent() {
@@ -179,7 +318,34 @@ Page({
     });
   },
 
-  exportContent() {
+  async prepareShare() {
+    if (this._shareId || this.data.shareId || !this.data.content) return this.data.shareId;
+    if (this._sharePreparing) return this._sharePreparing;
+    this._sharePreparing = (async () => {
+      this.setData({ sharePublishing: true });
+      try {
+        const res = await publishShareBio({
+          title: this.data.title,
+          content: this.data.content,
+          styleLabel: this.data.styleLabel,
+          sourceLabel: this.data.sourceLabel,
+          style: this.data.style,
+        });
+        this._shareId = res.shareId;
+        this.setData({ shareId: res.shareId });
+        return res.shareId;
+      } catch (err) {
+        console.error(err);
+        return "";
+      } finally {
+        this._sharePreparing = null;
+        this.setData({ sharePublishing: false });
+      }
+    })();
+    return this._sharePreparing;
+  },
+
+  async exportContent() {
     if (!this.data.content || this.data.exporting) return;
     this.setData({ exporting: true });
     exportAndSaveBiography({
@@ -196,13 +362,15 @@ Page({
       .finally(() => this.setData({ exporting: false }));
   },
 
-  saveContent() {
+  async saveContent() {
     if (!this.data.content || this.data.generating || this.data.generateFailed) return;
 
     if (this.data.saved) {
       this.goHistory();
       return;
     }
+
+    const shareId = (await this.prepareShare()) || this.data.shareId || this._shareId;
 
     saveBiography({
       title: this.data.title,
@@ -212,6 +380,10 @@ Page({
       source: this.data.source,
       wuxiaTone: this.generateParams?.wuxiaTone,
       yanqingTone: this.generateParams?.yanqingTone,
+      shareId,
+      figureMatch: this._figureMatch || this.data.figureMatch,
+      figureMatchRevealed: this.data.figureMatchRevealed,
+      resonanceId: this._resonanceId || this.data.resonanceId,
     });
 
     if (this.data.source === "timeline") {
@@ -228,11 +400,24 @@ Page({
   },
 
   onShareAppMessage() {
-    const preview = (this.data.content || "").slice(0, 40);
+    if (this._shareResonanceMode && this.data.figureMatchRevealed && this.data.figureMatch) {
+      this._shareResonanceMode = false;
+      const resonanceId = this._resonanceId || this.data.resonanceId;
+      if (!resonanceId) {
+        this.ensureResonancePublished();
+      }
+      return {
+        title: buildResonanceShareTitle(this.data.title, this.data.figureMatch),
+        path: buildResonancePath(resonanceId),
+      };
+    }
+    const shareId = this.data.shareId || this._shareId;
+    if (!shareId) {
+      this.prepareShare();
+    }
     return {
-      title: this.data.title || "我的人生传记",
-      path: "/pages/bio/home/home",
-      desc: preview ? `${preview}……` : "记录故事，传承记忆",
+      title: buildShareTitle(this.data.title, this.data.content),
+      path: buildSharePath(shareId),
     };
   },
 });

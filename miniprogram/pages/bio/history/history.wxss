@@ -293,3 +293,102 @@
   width: 750px;
   height: 12000px;
 }
+
+.resonance-panel {
+  margin-top: 24rpx;
+}
+
+.resonance-teaser,
+.resonance-card {
+  background: #faf6f0;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  border: 1rpx solid #e8dfd3;
+}
+
+.resonance-teaser-title,
+.resonance-card-header {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #8b6914;
+}
+
+.resonance-teaser-desc {
+  font-size: 22rpx;
+  color: #8b7355;
+  margin-top: 8rpx;
+}
+
+.resonance-reveal-btn {
+  width: 100%;
+  height: 72rpx;
+  line-height: 72rpx;
+  margin-top: 16rpx;
+  border-radius: 36rpx;
+  font-size: 26rpx;
+  background: linear-gradient(135deg, #c4a574 0%, #8b6914 100%);
+  color: #fff;
+  border: none;
+  padding: 0;
+}
+
+.resonance-reveal-btn::after {
+  border: none;
+}
+
+.resonance-name {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #3d2b1f;
+  margin-top: 12rpx;
+}
+
+.resonance-alias {
+  font-size: 22rpx;
+  color: #8b7355;
+  margin-top: 6rpx;
+}
+
+.resonance-section {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #8b6914;
+  margin-top: 20rpx;
+}
+
+.resonance-reason,
+.resonance-story,
+.resonance-bridge {
+  font-size: 24rpx;
+  color: #3d2b1f;
+  line-height: 1.7;
+}
+
+.resonance-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  margin-top: 20rpx;
+}
+
+.resonance-btn {
+  height: 68rpx;
+  line-height: 68rpx;
+  font-size: 26rpx;
+  border-radius: 34rpx;
+  background: #fff;
+  color: #8b6914;
+  border: 2rpx solid #c4a574;
+  padding: 0;
+  margin: 0;
+}
+
+.resonance-btn::after {
+  border: none;
+}
+
+.resonance-btn.primary {
+  background: linear-gradient(135deg, #c4a574 0%, #8b6914 100%);
+  color: #fff;
+  border: none;
+}

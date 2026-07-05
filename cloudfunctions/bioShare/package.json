@@ -1,0 +1,9 @@
+{
+  "name": "bioShare",
+  "version": "1.0.0",
+  "description": "传记分享发布、读取与小程序码",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

@@ -1,7 +1,7 @@
 # 将 cloudfunctions/common 同步到各云函数目录（部署前执行）
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $src = Join-Path $root "common"
-$targets = @("generateBiography", "chatInterview")
+$targets = @("generateBiography", "chatInterview", "bioShare")
 
 foreach ($name in $targets) {
   $dest = Join-Path $root "$name\common"

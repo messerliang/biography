@@ -81,7 +81,31 @@
 
     <scroll-view class="modal-scroll" scroll-y enhanced>
       <view class="modal-body">
-        <bio-content content="{{detail.content}}" font-size="{{fontSize}}" />
+        <bio-content content="{{detail.content}}" subject-name="{{detail.subjectName}}" font-size="{{fontSize}}" />
+
+        <view class="resonance-panel" wx:if="{{detail.figureMatch}}">
+          <view class="resonance-teaser" wx:if="{{!detail.figureMatchRevealed}}">
+            <view class="resonance-teaser-title">{{detail.resonanceMeta.label}}</view>
+            <view class="resonance-teaser-desc">点击揭晓与您气质相近的{{detail.resonanceMeta.kind === 'jinyong' ? '江湖人物' : '历史人物'}}</view>
+            <button class="resonance-reveal-btn" catchtap="revealDetailFigureMatch">{{detail.resonanceMeta.revealBtn}}</button>
+          </view>
+          <view class="resonance-card" wx:else>
+            <view class="resonance-card-header">{{detail.resonanceMeta.cardHeader}}</view>
+            <view class="resonance-name">{{detail.figureMatch.name}}</view>
+            <view class="resonance-alias" wx:if="{{detail.figureMatch.alias}}">{{detail.figureMatch.alias}}</view>
+            <view class="resonance-section">为何相通</view>
+            <view class="resonance-reason" wx:for="{{detail.figureMatch.reasons}}" wx:key="*this">· {{item}}</view>
+            <view class="resonance-section">{{detail.resonanceMeta.storyTitle}}</view>
+            <view class="resonance-story">{{detail.figureMatch.story}}</view>
+            <view class="resonance-section">与您的呼应</view>
+            <view class="resonance-bridge">{{detail.figureMatch.bridge}}</view>
+            <view class="resonance-actions">
+              <button class="resonance-btn" catchtap="saveDetailResonanceCard" loading="{{resonanceSaving}}">保存卡片</button>
+              <button class="resonance-btn" catchtap="shareDetailResonanceImage" loading="{{resonanceSharing}}">分享图片</button>
+              <button class="resonance-btn primary" open-type="share" catchtap="prepareDetailResonanceShare">分享卡片</button>
+            </view>
+          </view>
+        </view>
       </view>
     </scroll-view>
 
@@ -95,3 +119,4 @@
 </view>
 
 <canvas canvas-id="exportCanvas" class="export-canvas"></canvas>
+<canvas canvas-id="resonanceCanvas" class="export-canvas"></canvas>

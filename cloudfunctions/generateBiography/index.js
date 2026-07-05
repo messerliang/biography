@@ -3,7 +3,17 @@ const { chatCompletion } = require("./common/deepseek");
 const { filterInput, filterOutput } = require("./common/contentFilter");
 const { checkRateLimit } = require("./common/rateLimit");
 const { validatePayload, prepareMaterial } = require("./common/material");
-const { buildBiographyUserPrompt, getBiographySystemPrompt, normalizeWuxiaTone, normalizeYanqingTone, isYanqingMelodrama, isFeaturedBiographyStyle } = require("./common/prompts");
+const {
+  buildBiographyUserPrompt,
+  getBiographySystemPrompt,
+  normalizeWuxiaTone,
+  normalizeYanqingTone,
+  isYanqingMelodrama,
+  isFeaturedBiographyStyle,
+  isFigureMatchEnabled,
+  getFigureMatchKind,
+} = require("./common/prompts");
+const { parseBiographyWithFigureMatch } = require("./common/figureMatch");
 const { writeAuditLog, sha256 } = require("./common/audit");
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
@@ -16,6 +26,10 @@ function resolveStyle(raw) {
 }
 const VALID_LENGTHS = ["short", "normal", "adaptive"];
 const VALID_PERSONS = ["first", "third"];
+
+function extraTokensForFigureMatch() {
+  return 600;
+}
 
 exports.main = async (event) => {
   const wxContext = cloud.getWXContext();
@@ -49,12 +63,42 @@ exports.main = async (event) => {
   }
 
   const prepared = prepareMaterial(inputCheck.text, length);
+  const withFigureMatch = isFigureMatchEnabled(style, wuxiaTone);
+  const figureKind = getFigureMatchKind(style, wuxiaTone);
 
   try {
     const isFeaturedMode = isFeaturedBiographyStyle(style, wuxiaTone, yanqingTone);
     const isXuanhuan = style === "xuanhuan";
     const isClassical = style === "classical";
     const isYanqingMelodramaMode = style === "yanqing" && isYanqingMelodrama(yanqingTone);
+
+    let baseMaxTokens = isFeaturedMode
+      ? length === "short"
+        ? 1000
+        : 2200
+      : length === "short"
+        ? 900
+        : 2200;
+    if (withFigureMatch) {
+      baseMaxTokens += extraTokensForFigureMatch();
+    }
+
+    const completionOptions = {
+      temperature: isXuanhuan
+        ? 0.86
+        : isClassical
+          ? 0.75
+          : isYanqingMelodramaMode
+            ? 0.88
+            : isFeaturedMode
+              ? 0.82
+              : 0.68,
+      max_tokens: baseMaxTokens,
+    };
+    if (withFigureMatch) {
+      completionOptions.response_format = { type: "json_object" };
+    }
+
     const biographyRaw = await chatCompletion(
       [
         { role: "system", content: getBiographySystemPrompt(style, wuxiaTone, yanqingTone) },
@@ -72,27 +116,27 @@ exports.main = async (event) => {
           }),
         },
       ],
-      {
-        temperature: isXuanhuan
-          ? 0.86
-          : isClassical
-            ? 0.75
-            : isYanqingMelodramaMode
-              ? 0.88
-              : isFeaturedMode
-                ? 0.82
-                : 0.68,
-        max_tokens: isFeaturedMode
-          ? length === "short"
-            ? 1000
-            : 2200
-          : length === "short"
-            ? 900
-            : 2200,
-      }
+      completionOptions
     );
 
-    const outputCheck = filterOutput(biographyRaw);
+    let content = "";
+    let figureMatch = null;
+
+    if (withFigureMatch && figureKind) {
+      const parsed = parseBiographyWithFigureMatch(biographyRaw, figureKind);
+      content = parsed.biography;
+      figureMatch = parsed.figureMatch;
+      if (!content && !parsed.parseFailed) {
+        content = String(biographyRaw || "").trim();
+      }
+      if (!content && parsed.parseFailed) {
+        content = String(biographyRaw || "").trim();
+      }
+    } else {
+      content = String(biographyRaw || "").trim();
+    }
+
+    const outputCheck = filterOutput(content);
     if (!outputCheck.allowed) {
       return { success: false, code: outputCheck.code, message: outputCheck.message };
     }
@@ -108,6 +152,7 @@ exports.main = async (event) => {
     return {
       success: true,
       content: outputCheck.text,
+      figureMatch: figureMatch || undefined,
       meta: {
         source,
         style,
@@ -116,6 +161,7 @@ exports.main = async (event) => {
         truncated: prepared.truncated,
         wuxiaTone: style === "wuxia" ? wuxiaTone : undefined,
         yanqingTone: style === "yanqing" ? yanqingTone : undefined,
+        figureMatchKind: figureKind || undefined,
         charCount: outputCheck.text.length,
       },
     };
